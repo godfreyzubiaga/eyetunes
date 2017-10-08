@@ -1,0 +1,25 @@
+body {
+  margin: 0;
+}
+
+#container {
+  height: 100vh;
+  display: grid;
+  grid-template-areas: "header" "content" "footer";
+  grid-auto-rows: 80px 1fr 100px;
+}
+
+#header {
+  grid-area: header;
+  background: red;
+}
+
+#content {
+  grid-area: content;
+  background: green;
+}
+
+#footer {
+  grid-area: footer;
+  background: blue;
+}
