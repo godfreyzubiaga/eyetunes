@@ -11,15 +11,28 @@ body {
 
 #header {
   grid-area: header;
-  background: red;
+  background: #3842BF;
+  text-align: center;
+}
+
+#header-container {
+  transform: translate(0, 30%);
+}
+
+#title {
+  width: auto;
+  font-size: 2.5em;
+  margin: auto;
+  color: white;
 }
 
 #content {
   grid-area: content;
-  background: green;
+  background: #fafafa;
+  text-align: center;
 }
 
 #footer {
   grid-area: footer;
-  background: blue;
+  background: black;
 }
