@@ -7,7 +7,7 @@ body {
   height: 100vh;
   display: grid;
   grid-template-areas: "header" "content" "footer";
-  grid-auto-rows: 80px auto 100px;
+  grid-auto-rows: 80px 1fr auto;
 }
 
 @media screen and (min-width: 700px) {
@@ -113,4 +113,6 @@ body {
 #footer {
   grid-area: footer;
   background: black;
+  color: white;
+  padding: 10px 30px;
 }
