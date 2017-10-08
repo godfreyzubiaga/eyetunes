@@ -6,8 +6,10 @@ const app = express();
 const port = process.env.port || 8084;
 const dbUrl = 'mongodb://localhost:27017/eyetunes';
 let db;
+const htmlLink = `${process.cwd()}/public/html`;
 
-app.use(express.static(path.join(process.cwd(), 'public')));
+app.use("/css", express.static(path.join(process.cwd(), '/public/css')));
+app.use("/resources", express.static(path.join(process.cwd(), '/public/resources')));
 
 MongoClient.connect(dbUrl, (error, database) => {
   if (!error) {
@@ -18,3 +20,10 @@ MongoClient.connect(dbUrl, (error, database) => {
   }
 });
 
+app.get('/admin', (request, response) => {
+  response.sendFile(`${htmlLink}/adminpage.html`);
+});
+
+app.get('/', (request, response) => {
+  response.sendFile(`${htmlLink}/index.html`);
+});
