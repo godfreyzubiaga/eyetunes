@@ -6,14 +6,12 @@ const app = express();
 const port = process.env.port || 8084;
 const dbUrl = 'mongodb://localhost:27017/eyetunes';
 let db;
-const htmlLink = `${process.cwd()}/public/html`;
 
-app.use("/css", express.static(path.join(process.cwd(), '/public/css')));
-app.use("/resources", express.static(path.join(process.cwd(), '/public/resources')));
+app.use(express.static(path.join(process.cwd(), 'public/')));
 
 MongoClient.connect(dbUrl, (error, database) => {
   if (!error) {
-    db = database;
+    db = database;    
     app.listen(port, () => {
       console.log(`App is live @ http://localhost:${port}!`);
     });
@@ -21,9 +19,5 @@ MongoClient.connect(dbUrl, (error, database) => {
 });
 
 app.get('/admin', (request, response) => {
-  response.sendFile(`${htmlLink}/adminpage.html`);
-});
-
-app.get('/', (request, response) => {
-  response.sendFile(`${htmlLink}/index.html`);
+  response.json({"page": "admin"});
 });
