@@ -7,17 +7,12 @@ body {
   height: 100vh;
   display: grid;
   grid-template-areas: "header" "content" "footer";
-  grid-auto-rows: 80px 1fr auto;
+  grid-auto-rows: 60px 1fr auto;
 }
 
 @media screen and (min-width: 700px) {
   #search-bar {
-    font-size: 1.5em;
     padding: 10px 20px;
-  }
-  #search,
-  #options {
-    font-size: 1.3em;
   }
   #search {
     padding: 12px 20px;
@@ -29,15 +24,13 @@ body {
 
 @media screen and (max-width: 700px) {
   #search-bar {
-    font-size: 0.8em;
     padding: 5px;
-  }
-  #search,
-  #options {
-    font-size: 0.7em;
   }
   #search {
     padding: 12px 10px;
+  }
+  #main-content {
+    margin: 0 auto;
   }
 }
 
@@ -57,37 +50,42 @@ body {
   color: white;
 }
 
-#content {
+#main-content {
   grid-area: content;
   display: grid;
   grid-template-areas: "searchBar" "options" "searchBtn" "resultContainer";
   text-align: center;
   grid-auto-rows: repeat(1fr, 3) auto;
+  margin: 0 auto;
+}
+
+#main-content>div {
+  margin-top: 10px;
 }
 
 #search-bar-container {
   grid-area: searchBar;
-  margin-top: 20px;
 }
 
 #options {
   grid-area: options;
+  font-size: 1.3em;
 }
 
 #search-btn-container {
   grid-area: searchBtn;
- 
 }
 
 #result-container {
   grid-area: resultContainer;
-  height: 50vh;
-  margin-left: auto;
-  margin-right: auto;
+  height: 450px;
   width: 90%;
+  margin-left: auto;
   border: 1px solid gray;
   border-radius: 5px;
   overflow-y: auto;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 #options>label {
@@ -98,6 +96,7 @@ body {
   border: none;
   border-bottom: 1px solid #3842BF;
   text-align: center;
+  font-size: 1.5em;
   background: inherit;
 }
 
@@ -108,6 +107,7 @@ body {
   background: #3842BF;
   color: white;
   cursor: pointer;
+  font-size: 1.3em;
 }
 
 #footer {
@@ -115,4 +115,59 @@ body {
   background: black;
   color: white;
   padding: 10px 30px;
+  text-align: center;
 }
+
+
+/* login PAGE STYLES */
+
+#content-container {
+  margin-top: 50px;
+  margin: 50px auto 0 auto;
+  text-align: center;
+  padding: 20px 20px;
+  font-size: 1.2em;
+}
+
+@media screen and (min-width: 700px) {
+  #content-container {
+    width: 400px;
+    border: 1px solid lightgray;
+    box-shadow: 0 19px 38px rgba(0, 0, 0, 0.30), 0 15px 12px rgba(0, 0, 0, 0.22);
+  }
+}
+
+h1 {
+  margin: 0;
+}
+
+.fields,
+#submitBtn {
+  padding: 10px;
+  margin-bottom: 30px;
+  border: none;
+  border-bottom: 1px solid black;
+}
+
+#submitBtn {
+  border: none;
+  font-size: 1em;
+  padding: 10px 30px;
+  background: #3842BF;
+  color: white;
+  cursor: pointer;
+  margin-bottom: 20px;
+  margin-top: 10px;
+}
+
+#registerLink, #loginLink {
+  cursor: pointer;
+  color: blue;
+}
+
+#field-container {
+  margin-top: 50px;
+}
+
+
+/* -------------------------------------- */

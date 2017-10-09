@@ -7,11 +7,15 @@ const port = process.env.port || 8084;
 // const dbUrl = 'mongodb://eyetuneadmin413:eyetuneadmin413@ds013495.mlab.com:13495/eyetunes';
 const dbUrl = 'mongodb://localhost:27017/eyetunes';
 let db;
-const htmlLink = `${process.cwd()}/public/html`;
 
+<<<<<<< HEAD
 app.use("/css", express.static(path.join(process.cwd(), '/public/css')));
 // app.use("/resources", express.static(path.join(process.cwd(), '/public/resources')));
 app.use(express.static(path.join(process.cwd(), 'public/html')));
+=======
+app.use(express.static(path.join(process.cwd(), 'public/')));
+
+>>>>>>> f8a481410a9cd47f346582292609414feed91fd2
 MongoClient.connect(dbUrl, (error, database) => {
   if (!error) {
     db = database;    
@@ -22,6 +26,7 @@ MongoClient.connect(dbUrl, (error, database) => {
 });
 
 app.get('/admin', (request, response) => {
+<<<<<<< HEAD
   response.sendFile(`${htmlLink}/adminpage.html`);
 });
 
@@ -32,4 +37,7 @@ app.get('/', (request, response) => {
     }
   });
   response.sendFile(`${htmlLink}/index.html`);
+=======
+  response.json({"page": "admin"});
+>>>>>>> f8a481410a9cd47f346582292609414feed91fd2
 });
