@@ -115,6 +115,7 @@ body {
   background: black;
   color: white;
   padding: 10px 30px;
+  text-align: center;
 }
 
 
@@ -141,28 +142,27 @@ h1 {
 }
 
 .fields,
-#loginBtn {
+#submitBtn {
   padding: 10px;
   margin-bottom: 30px;
   border: none;
   border-bottom: 1px solid black;
 }
 
-#loginBtn {
+#submitBtn {
   border: none;
   font-size: 1em;
   padding: 10px 30px;
   background: #3842BF;
   color: white;
   cursor: pointer;
-  margin-bottom: 0;
+  margin-bottom: 20px;
+  margin-top: 10px;
 }
 
-#register {
+#registerLink, #loginLink {
   cursor: pointer;
   color: blue;
-  text-decoration: underline;
-  margin-top: 50px;
 }
 
 #field-container {

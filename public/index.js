@@ -1,3 +1,9 @@
+let content;
+window.onload = () => {
+  content = document.getElementById('content');
+  content.innerHTML = loginHtml();
+}
+
 function loginHtml() {
   return `
   <div id="content-container">
@@ -11,11 +17,46 @@ function loginHtml() {
       <br>
       <input type="password" name="password" id="password" class="fields" required/>
       <br>
-      <button type="submit" id="loginBtn">Submit</button>
+      <button type="submit" id="submitBtn">Submit</button>
       <br>
-      <span id="register">Register here</span>
+      <span id="registerLink" onclick="changeContent('register')">Register here</span>
     </div>
   </div>`;
+}
+
+function registerHtml() {
+  return `
+    <div id="content-container">
+      <h1>Register</h1>
+      <div id="field-container">
+        <label class="labels" for="fullname">Full Name / Band Name</label>
+        <br>
+        <input type="text" name="name" id="fullname" class="fields"/>
+        <br>
+        <label class="labels" for="username">Username</label>
+        <br>
+        <input type="text" name="username" id="username" class="fields"/>
+        <br>
+        <label class="labels" for="password">Passsword</label>
+        <br>
+        <input type="password" name="password" id="password" class="fields"/>
+        <br>
+        <div id="options">
+          <input type="radio" name="option" id="artist" value="artist">
+          <label for="artist">Artist</label>
+          <input type="radio" name="option" id="user" checked value="artist">
+          <label for="user">User</label>
+        </div>
+        <button type="submit" id="submitBtn">Submit</button>
+        <br>
+        <span id="loginLink" onclick="changeContent('login')">Login here</span>
+      </div>
+    </div>
+  `;
+
+  loginLink.onclick = () => {
+    content.innerHTML = loginHtml();
+  }
 }
 
 function userHtml() {
@@ -36,15 +77,20 @@ function userHtml() {
       <label for="artist">Artist</label>
     </div>
     <div id="result-container">
-  
+
     </div>
   </div>
   `;
 }
 
-window.onload = () => {
-  document.getElementById('content').innerHTML = loginHtml();  
+function changeContent(page) {
+  if (page === 'login') {
+    content.innerHTML = loginHtml();
+  } else if (page === 'register') {
+    content.innerHTML = registerHtml();
+  }
 }
+
 
 function doAjax(method, url, customFunction) {
   const xhr = new XMLHttpRequest();
