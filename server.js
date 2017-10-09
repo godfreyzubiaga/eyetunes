@@ -8,14 +8,8 @@ const port = process.env.port || 8084;
 const dbUrl = 'mongodb://localhost:27017/eyetunes';
 let db;
 
-<<<<<<< HEAD
-app.use("/css", express.static(path.join(process.cwd(), '/public/css')));
-// app.use("/resources", express.static(path.join(process.cwd(), '/public/resources')));
-app.use(express.static(path.join(process.cwd(), 'public/html')));
-=======
 app.use(express.static(path.join(process.cwd(), 'public/')));
 
->>>>>>> f8a481410a9cd47f346582292609414feed91fd2
 MongoClient.connect(dbUrl, (error, database) => {
   if (!error) {
     db = database;    
@@ -26,18 +20,5 @@ MongoClient.connect(dbUrl, (error, database) => {
 });
 
 app.get('/admin', (request, response) => {
-<<<<<<< HEAD
-  response.sendFile(`${htmlLink}/adminpage.html`);
-});
-
-app.get('/', (request, response) => {
-  db.collection('songs').find().toArray((error, results) => {
-    if (!error) {
-      response.end(JSON.stringify(results));
-    }
-  });
-  response.sendFile(`${htmlLink}/index.html`);
-=======
   response.json({"page": "admin"});
->>>>>>> f8a481410a9cd47f346582292609414feed91fd2
 });

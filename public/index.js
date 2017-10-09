@@ -1,6 +1,3 @@
-<<<<<<< HEAD
-if ()
-=======
 let content;
 window.onload = () => {
   content = document.getElementById('content');
@@ -105,4 +102,3 @@ function doAjax(method, url, customFunction) {
   xhr.open(method, url, true);
   xhr.send();
 }
->>>>>>> f8a481410a9cd47f346582292609414feed91fd2
