@@ -107,16 +107,20 @@ function changeContent(page) {
 }
 
 function login(username, password) {
-  doAjax('GET', `/login/${encodeURIComponent(username)}&${encodeURIComponent(password)}`, (xhr) => {
-    const data = JSON.parse(xhr.responseText);
-    if (data.length != 0) {
-      changeContent(data.role);
-      activeUser = data._id;
-      console.log('logged in', data.name);
-    } else {
-      alert('User not found');
-    }
-  });
+  if (!username || !password) {
+    alert('Please fill up the form completely')
+  } else {
+    doAjax('GET', `/login/${encodeURIComponent(username)}&${encodeURIComponent(password)}`, (xhr) => {
+      const data = JSON.parse(xhr.responseText);
+      if (data.length != 0) {
+        alert('Login Succesful');
+        changeContent(data.role);
+        activeUser = data._id;
+      } else {
+        alert('User not found');
+      }
+    });
+  }
 }
 
 function register(name, username, password) {
@@ -128,7 +132,7 @@ function register(name, username, password) {
     }
   });
   if (password.length <= 6 || !name || !username || !password || !role) {
-    alert('Please fill up all forms properly');
+    alert('Please fill up all forms completely');
   } else {
     doAjax('POST',
       `/register/${encodeURIComponent(name)}&${encodeURIComponent(username)}&${encodeURIComponent(password)}&${encodeURIComponent(role)}`,
