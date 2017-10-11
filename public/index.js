@@ -1,5 +1,7 @@
 let content;
 let activeUser;
+let regUsernameField;
+let regPasswordField;
 window.onload = () => {
   content = document.getElementById('content');
   content.innerHTML = loginHtml();
@@ -36,12 +38,12 @@ function registerHtml() {
         <br>
         <label class="labels" for="username">Username</label>
         <br>
-        <input type="text" name="username" id="username" class="fields"/>
+        <input type="text" name="username" id="username" class="fields" onkeyup="checkIfAvailable(username.value)"/>
         <br>
-        <label class="labels" for="password">Passsword</label>
+        <label class="labels" for="password" >Passsword</label>
+        <p id="subLabel">(6 or more characters)</p>
         <br>
-        <input type="password" name="password" id="password" class="fields"/>
-        <br>
+        <input type="password" name="password" id="password" class="fields" onkeyup="passwordCheck(password.value)">
         <div id="options">
           <input type="radio" name="role" id="artist" value="artist">
           <label for="artist">Artist</label>
@@ -54,13 +56,11 @@ function registerHtml() {
       </div>
     </div>
   `;
-  loginLink.onclick = () => {
-    content.innerHTML = loginHtml();
-  }
 }
 
 function userHtml() {
   return `
+  <p id="logout" onclick="logout()">Logout</p>  
   <div id="main-content">
     <div id="search-bar-container">
       <input type="text" id="search-bar" name="keyword" placeholder="Song, Artist or Album" />
@@ -77,10 +77,14 @@ function userHtml() {
       <label for="artist">Artist</label>
     </div>
     <div id="result-container">
-
     </div>
   </div>
   `;
+}
+
+function logout() {
+  activeUser = "";
+  changeContent('login');
 }
 
 function changeContent(page) {
@@ -88,8 +92,13 @@ function changeContent(page) {
     content.innerHTML = loginHtml();
   } else if (page === 'register') {
     content.innerHTML = registerHtml();
-  } else if (page === 'user') {
-
+    loginLink.onclick = () => {
+      content.innerHTML = loginHtml();
+    }
+    regUsernameField = document.getElementById('username');
+    regPasswordField = document.getElementById('password');
+  } else if (page === 'user' && activeUser) {
+    content.innerHTML = userHtml();
   } else if (page === 'artist') {
 
   } else if (page === 'admin') {
@@ -101,40 +110,59 @@ function login(username, password) {
   doAjax('GET', `/login/${encodeURIComponent(username)}&${encodeURIComponent(password)}`, (xhr) => {
     const data = JSON.parse(xhr.responseText);
     if (data.length != 0) {
-      changeContent(data[0].role);
-      activeUser = data[0]._id;
+      changeContent(data.role);
+      activeUser = data._id;
+      console.log('logged in', data.name);
     } else {
       alert('User not found');
     }
-  })
+  });
 }
 
 function register(name, username, password) {
-  let role = document.getElementsByName('role');
-  role.forEach((row) => {
+  let roleOptions = document.getElementsByName('role');
+  let role;
+  roleOptions.forEach((row) => {
     if (row.checked) {
       role = row.value;
     }
   });
-  doAjax('GET', `/get-users/`, (xhr) => {
-    const data = JSON.parse(xhr.responseText);
-    let available = true;
-    data.map((row) => {
-      if (row.username === username) {
-        available = false;
-      }
+  if (password.length <= 6 || !name || !username || !password || !role) {
+    alert('Please fill up all forms properly');
+  } else {
+    doAjax('POST',
+      `/register/${encodeURIComponent(name)}&${encodeURIComponent(username)}&${encodeURIComponent(password)}&${encodeURIComponent(role)}`,
+      showSuccess);
+  }
+}
+
+function checkIfAvailable(username) {
+  if (username === '') {
+    regUsernameField.style.borderColor = 'black';
+  } else {
+    doAjax('GET', `/checkIfAvailable/${encodeURIComponent(username)}`, (xhr) => {
+      let response = JSON.parse(xhr.responseText);
+      response.available ? regUsernameField.style.borderColor = 'green' : regUsernameField.style.borderColor = 'red';
     });
-    if (available) {
-      doAjax('POST',
-        `/register/${encodeURIComponent(name)}&${encodeURIComponent(username)}&${encodeURIComponent(password)}&${encodeURIComponent(role)}`,
-        showSuccess);
-    }
-  });
+  }
+}
+
+function passwordCheck(password) {
+  if (password === '') {
+    regPasswordField.style.borderColor = 'black';
+  } else {
+    password.length >= 6 ? regPasswordField.style.borderColor = 'green' : regPasswordField.style.borderColor = 'black';
+  }
 }
 
 function showSuccess(xhr) {
-  alert('Signup success');
-  changeContent('login');
+  let response = JSON.parse(xhr.responseText);
+  if (response.registerSuccessful) {
+    alert('Signup success');
+    changeContent('login');
+  } else {
+    alert('something is wrong with your inputs');
+  }
 }
 
 function doAjax(method, url, customFunction) {
