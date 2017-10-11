@@ -77,5 +77,4 @@ app.get('/checkIfAvailable/:username', (request, response) => {
       results.length >= 1 ? response.json({"available": false}) : response.json({"available": true});
     });
   }
-  
 });

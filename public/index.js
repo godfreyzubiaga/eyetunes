@@ -60,7 +60,9 @@ function registerHtml() {
 
 function userHtml() {
   return `
-  <p id="logout" onclick="logout()">Logout</p>  
+  <p id="logout" onclick="logout()">Logout</p>
+  <br>
+  <br>
   <div id="main-content">
     <div id="search-bar-container">
       <input type="text" id="search-bar" name="keyword" placeholder="Song, Artist or Album" />
@@ -112,10 +114,9 @@ function login(username, password) {
   } else {
     doAjax('GET', `/login/${encodeURIComponent(username)}&${encodeURIComponent(password)}`, (xhr) => {
       const data = JSON.parse(xhr.responseText);
-      if (data.length != 0) {
-        alert('Login Succesful');
-        changeContent(data.role);
+      if (data._id) {
         activeUser = data._id;
+        changeContent(data.role);
       } else {
         alert('User not found');
       }
@@ -146,7 +147,7 @@ function checkIfAvailable(username) {
   } else {
     doAjax('GET', `/checkIfAvailable/${encodeURIComponent(username)}`, (xhr) => {
       let response = JSON.parse(xhr.responseText);
-      response.available ? regUsernameField.style.borderColor = 'green' : regUsernameField.style.borderColor = 'red';
+      response.available ? regUsernameField.style.borderColor = 'lightgreen' : regUsernameField.style.borderColor = 'red';
     });
   }
 }
@@ -155,7 +156,7 @@ function passwordCheck(password) {
   if (password === '') {
     regPasswordField.style.borderColor = 'black';
   } else {
-    password.length >= 6 ? regPasswordField.style.borderColor = 'green' : regPasswordField.style.borderColor = 'black';
+    password.length >= 6 ? regPasswordField.style.borderColor = 'lightgreen' : regPasswordField.style.borderColor = 'red';
   }
 }
 
