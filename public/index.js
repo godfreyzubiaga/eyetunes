@@ -154,6 +154,7 @@ function changeContent(page) {
   } else if (page === 'user' && activeUser) {
     content.innerHTML = userHtml();
   } else if (page === 'artist') {
+    content.innerHTML = artistHtml();
   } else if (page === 'admin') {
     content.innerHTML = adminHtml();
   } else if (page === 'profile') {
