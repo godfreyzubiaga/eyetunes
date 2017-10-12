@@ -1,5 +1,6 @@
 const express = require('express');
 const MongoClient = require('mongodb').MongoClient;
+const ObjectId = require('mongodb').ObjectId;
 const path = require('path');
 const bcrypt = require('bcrypt');
 
@@ -77,4 +78,13 @@ app.get('/checkIfAvailable/:username', (request, response) => {
       results.length >= 1 ? response.json({"available": false}) : response.json({"available": true});
     });
   }
+});
+
+app.get('/get-user/:userId', (request, response) => {
+  let id = request.params.userId;
+  db.collection('users').findOne({'_id': ObjectId(id)}, (error, result) => {
+    if (!error) {
+      response.json(result);
+    }
+  });
 });

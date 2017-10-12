@@ -1,6 +1,7 @@
 body {
   margin: 0;
   overflow-x: hidden;
+  font-family: 'Josefin Sans', sans-serif;
 }
 
 #container {
@@ -19,6 +20,11 @@ body {
   }
   #result-container {
     width: 80%;
+  }
+  #songList {
+    margin: 30px;  
+    border: 1px solid gray;
+    border-radius: 5px;  
   }
 }
 
@@ -41,7 +47,7 @@ body {
 }
 
 #header-container {
-  transform: translate(0, 10%);
+  transform: translate(0, 30%);
 }
 
 #title {
@@ -57,6 +63,7 @@ body {
   text-align: center;
   grid-auto-rows: repeat(1fr, 3) auto;
   margin: 0 auto;
+  width: 100%;
 }
 
 #main-content>div {
@@ -78,7 +85,8 @@ body {
 
 #result-container {
   grid-area: resultContainer;
-  height: 450px;
+  max-height: 450px;
+  min-height: 300px;
   width: 90%;
   margin-left: auto;
   border: 1px solid gray;
@@ -116,10 +124,8 @@ body {
   color: white;
   padding: 10px 30px;
   text-align: center;
+  bottom: 0;
 }
-
-
-/* login PAGE STYLES */
 
 #content-container {
   margin-top: 50px;
@@ -160,7 +166,8 @@ h1 {
   margin-top: 10px;
 }
 
-#registerLink, #loginLink {
+#registerLink,
+#loginLink {
   cursor: pointer;
   color: blue;
 }
@@ -168,15 +175,49 @@ h1 {
 #field-container {
   margin-top: 50px;
 }
-/* -------------------------------------- */
+
+#logout,
+#profile, #searchLink {
+  cursor: pointer;
+  margin: 0;
+  font-size: 1.3em;  
+  padding: 10px;
+  margin: 10px;
+  background: #3842BF;
+  color: white;
+  border-radius: 5px;
+}
 
 #logout {
   float: right;
-  padding-right: 20px;
   font-size: 1.3em;
-  cursor: pointer;
+}
+
+#profile, #searchLink {
+  float: left;
 }
 
 #subLabel {
   margin: 0;
+}
+
+table {
+  width: 100%;
+  padding: 10px;
+}
+
+#songTitleRow,
+#artistRow,
+#albumRow,
+#yearRow {
+  width: 25%
+}
+
+#main-column {
+  background: black;
+  color: white;
+}
+
+.songColumn:nth-child(even) {
+  background: lightgray;
 }
