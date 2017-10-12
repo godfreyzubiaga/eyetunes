@@ -161,7 +161,7 @@ function changeContent(page) {
     content.innerHTML = profileHtml();
     mainRow = document.getElementById('main-row');
     let name = document.getElementById('name');
-    doAjax('GET', `/get-user/${encodeURIComponent(activeUser)}`, (xhr) => {
+    doAjax('GET', `/get-user/${encodeURIComponent(activeUser)}`, xhr => {
       let user = JSON.parse(xhr.responseText);
       name.innerText = user.name;
     });
@@ -188,7 +188,7 @@ function login(username, password) {
     doAjax(
       'GET',
       `/login/${encodeURIComponent(username)}&${encodeURIComponent(password)}`,
-      xhr => {
+      (xhr) => {
         const data = JSON.parse(xhr.responseText);
         if (data._id) {
           activeUser = data._id;

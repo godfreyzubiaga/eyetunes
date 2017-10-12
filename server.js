@@ -24,20 +24,23 @@ app.get('/login/:username&:password', (request, response) => {
   let username = request.params.username;
   let password = request.params.password;
 
-  db.collection('users').find({
+  db.collection('users').findOne({
     username: {
       $regex: `${username}`,
-      $options: "i"
+      $options: 'i'
     }
-  }).toArray((error, results) => {
+  },
+  (error, result) => {
     if (!error) {
-      results.map(row => {
-        bcrypt.compare(password, row.password, (error, samePassword) => {
-          if (samePassword) {
-            response.json(row);
-          }
-        });
+      bcrypt.compare(password, result.password, (error, samePassword) => {
+        if (samePassword) {
+          response.json(result);
+        } else {
+          response.json({ passwordMatch: false });
+        }
       });
+    } else {
+      response.json({ userFound: false });
     }
   });
 });
@@ -49,40 +52,42 @@ app.post('/register/:name&:username&:password&:role', (request, response) => {
   let role = request.params.role;
   bcrypt.genSalt(12, (error, salt) => {
     bcrypt.hash(password, salt, (error, encryptedPassword) => {
-      db.collection('users').find({'username': username}, (error, result) => { 
+      db.collection('users').find({ username: username }, (error, result) => {
         if (result.username !== username) {
           db.collection('users').insert({
-            "name": name,
-            "username": username,
-            "role": role,
-            "password": encryptedPassword
-          }, () => {
-            response.json({'registerSuccessful': true});
+            'name': name,
+            'username': username,
+            'role': role,
+            'password': encryptedPassword
+          },
+          () => {
+            response.json({ registerSuccessful: true });
           });
         } else {
-          response.json({'registerSuccessful': false});
+          response.json({ registerSuccessful: false });
         }
       });
-    })
+    });
   });
 });
 
 app.get('/checkIfAvailable/:username', (request, response) => {
   let username = request.params.username;
   if (username === 'admin') {
-    response.json({"available": true});
+    response.json({ available: true });
   } else {
     db.collection('users').find({
-      'username': username
-    }).toArray((error, results) => {
-      results.length >= 1 ? response.json({"available": false}) : response.json({"available": true});
-    });
+        username: username
+      })
+      .toArray((error, results) => {
+        results.length >= 1 ? response.json({ available: false }) : response.json({ available: true });
+      });
   }
 });
 
 app.get('/get-user/:userId', (request, response) => {
   let id = request.params.userId;
-  db.collection('users').findOne({'_id': ObjectId(id)}, (error, result) => {
+  db.collection('users').findOne({ _id: ObjectId(id) }, (error, result) => {
     if (!error) {
       response.json(result);
     }
