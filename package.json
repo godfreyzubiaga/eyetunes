@@ -1,10 +1,11 @@
 {
-  "name": "musicstore",
+  "name": "eyetunes",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
   },
   "author": "",
   "license": "ISC",
@@ -12,5 +13,8 @@
     "bcrypt": "^1.0.3",
     "express": "^4.16.1",
     "mongodb": "^2.2.31"
+  },
+  "engines": {
+    "node": "6.3.1"
   }
 }

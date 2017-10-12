@@ -5,8 +5,8 @@ const path = require('path');
 const bcrypt = require('bcrypt');
 
 const app = express();
-const port = process.env.port || 8084;
-const dbUrl = 'mongodb://localhost:27017/eyetunes';
+const port = process.env.PORT || 8084;
+const dbUrl = 'mongodb://admin:eyetunesadmin@ds013495.mlab.com:13495/eyetunes';
 let db;
 
 app.use(express.static(path.join(process.cwd(), 'public/')));
