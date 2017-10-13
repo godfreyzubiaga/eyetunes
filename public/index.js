@@ -106,7 +106,19 @@ function artistHtml() {
     <br>
     <br>
     <div id="main-content">
-      <h1 id="headerText">Artist's Page</h1>
+      <h1 id="headerText"></h1>
+      <h2>My albums</h2>
+      <div id="box">
+        <div class="albumContainer">
+          <div class="album">album1</div>
+        </div>
+        <div class="albumContainer">
+          <div class="album">album2</div>
+        </div>
+      </div>
+      <div>
+        <button id="submitBtn">Add Album</button>
+      </div>
     </div>
   `;
 }
@@ -155,18 +167,23 @@ function changeContent(page) {
     content.innerHTML = userHtml();
   } else if (page === 'artist') {
     content.innerHTML = artistHtml();
+    let headerText = document.getElementById('headerText');
+    doAjax('GET', `/get-user/${encodeURIComponent(activeUser)}`, xhr => {
+      let user = JSON.parse(xhr.responseText);
+      headerText.innerText = `Welcome, ${user.name}`;
+    });
   } else if (page === 'admin') {
     content.innerHTML = adminHtml();
   } else if (page === 'profile') {
     content.innerHTML = userProfile();
     table = document.getElementById('table');
     let name = document.getElementById('name');
-    doAjax('GET', `/get-user/${encodeURIComponent(activeUser)}`, (xhr) => {
+    doAjax('GET', `/get-user/${encodeURIComponent(activeUser)}`, xhr => {
       let user = JSON.parse(xhr.responseText);
       name.innerText = user.name;
     });
 
-    doAjax('GET', `/get-songs/${encodeURIComponent(activeUser)}`, (xhr) => {
+    doAjax('GET', `/get-songs/${encodeURIComponent(activeUser)}`, xhr => {
       let songs = JSON.parse(xhr.responseText).list;
       let artists = '';
       songs.map(row => {
@@ -196,7 +213,7 @@ function login(username, password) {
     doAjax(
       'GET',
       `/login/${encodeURIComponent(username)}&${encodeURIComponent(password)}`,
-      (xhr) => {
+      xhr => {
         const data = JSON.parse(xhr.responseText);
         if (data._id) {
           activeUser = data._id;
