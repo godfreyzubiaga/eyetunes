@@ -111,7 +111,7 @@ function artistHtml() {
   `;
 }
 
-function profileHtml() {
+function userProfile() {
   return `
     <div>
       <p id="logout" onclick="logout()">Logout</p>
@@ -123,7 +123,7 @@ function profileHtml() {
     <div id="main-content">
       <h1 id="name">Name Here</h1>
       <div id="songList">
-        <table>
+        <table id="table">
           <tr id="main-row">
             <th id="songTitleRow">Song Title</th>
             <th id="artistRow">Artist</th>
@@ -158,21 +158,29 @@ function changeContent(page) {
   } else if (page === 'admin') {
     content.innerHTML = adminHtml();
   } else if (page === 'profile') {
-    content.innerHTML = profileHtml();
-    mainRow = document.getElementById('main-row');
+    content.innerHTML = userProfile();
+    table = document.getElementById('table');
     let name = document.getElementById('name');
-    doAjax('GET', `/get-user/${encodeURIComponent(activeUser)}`, xhr => {
+    doAjax('GET', `/get-user/${encodeURIComponent(activeUser)}`, (xhr) => {
       let user = JSON.parse(xhr.responseText);
       name.innerText = user.name;
     });
 
-    doAjax('GET', `/get-songs/${encodeURIComponent(activeUser)}`, xhr => {
-      let songs = JSON.parse(xhr.responseText);
+    doAjax('GET', `/get-songs/${encodeURIComponent(activeUser)}`, (xhr) => {
+      let songs = JSON.parse(xhr.responseText).list;
+      let artists = '';
       songs.map(row => {
-        mainRow.innerHTML += `
+        row.artist.map((artist, index) => {
+          if (index === row.artist.length - 1) {
+            artists += artist.name + ' ';
+          } else {
+            artists += artist.name + ', ';
+          }
+        });
+        table.innerHTML += `
         <tr class="songColumn">
-          <td>${row.title}</td>
-          <td id="artistRow">${row.artist}</td>
+          <td>${row.name}</td>
+          <td id="artistRow">${artists}</td>
           <td id="albumRow">${row.album}</td>
           <td id="yearRow">${row.year}</td>
         </tr>`;
