@@ -82,9 +82,11 @@ app.get('/checkIfAvailable/:username', (request, response) => {
   if (username === 'admin') {
     response.json({ available: true });
   } else {
-    db.collection('users').findOne({ username: username },(error, results) => {
-      results.length >= 1 ? response.json({ available: false }) : response.json({ available: true });
-    }); 
+    db.collection('users').findOne({ username: username }, (error, results) => {
+      results.length >= 1
+        ? response.json({ available: false })
+        : response.json({ available: true });
+    });
   }
 });
 
@@ -101,20 +103,46 @@ app.get('/get-songs/:userId', (request, response) => {
   let userId = request.params.userId;
   let song;
   let songList = [];
-  db.collection('users').findOne({'_id': ObjectId(userId)}, (error, user) => {
+  db.collection('users').findOne({ _id: ObjectId(userId) }, (error, user) => {
     let songIds = user.songList;
     songIds.map((row, index) => {
-      db.collection('songs').findOne({'_id': row.songId}, (error, songResult) => {
-        db.collection('albums').findOne({'songList': {$elemMatch : { 'songId' : ObjectId(songResult._id)}}}, (error, album) => {
-          db.collection('users').find({'albums' : {$elemMatch : {'albumId' : album._id}}}).toArray((error, artistResult) => {
-            song = {'name': songResult.name, 'artist': artistResult, 'album': album.name, 'year': songResult.year};
-            songList.push(song);
-            if(index === (songIds.length - 1)) {
-              response.json({'list': songList});
-            }
-          });
+      db
+        .collection('songs')
+        .findOne({ _id: row.songId }, (error, songResult) => {
+          db
+            .collection('albums')
+            .findOne(
+              {
+                songList: { $elemMatch: { songId: ObjectId(songResult._id) } }
+              },
+              (error, album) => {
+                db
+                  .collection('users')
+                  .find({ albums: { $elemMatch: { albumId: album._id } } })
+                  .toArray((error, artistResult) => {
+                    song = {
+                      name: songResult.name,
+                      artist: artistResult,
+                      album: album.name,
+                      year: songResult.year
+                    };
+                    songList.push(song);
+                    if (index === songIds.length - 1) {
+                      response.json({ list: songList });
+                    }
+                  });
+              }
+            );
         });
-      });
-    })
+    });
+  });
+});
+
+app.get('/get-album/:albumId', (request, response) => {
+  let id = request.params.albumId;
+  db.collection('albums').findOne({ _id: ObjectId(id) }, (error, result) => {
+    if (!error) {
+      response.json(result);
+    }
   });
 });

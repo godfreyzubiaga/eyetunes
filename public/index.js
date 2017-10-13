@@ -109,12 +109,6 @@ function artistHtml() {
       <h1 id="headerText"></h1>
       <h2>My albums</h2>
       <div id="box">
-        <div class="albumContainer">
-          <div class="album">album1</div>
-        </div>
-        <div class="albumContainer">
-          <div class="album">album2</div>
-        </div>
       </div>
       <div>
         <button id="submitBtn">Add Album</button>
@@ -133,7 +127,7 @@ function userProfile() {
     <br>
     <br>
     <div id="main-content">
-      <h1 id="name">Name Here</h1>
+      <h1 id="name"></h1>
       <div id="songList">
         <table id="table">
           <tr id="main-row">
@@ -168,9 +162,21 @@ function changeContent(page) {
   } else if (page === 'artist') {
     content.innerHTML = artistHtml();
     let headerText = document.getElementById('headerText');
+    let box = document.getElementById('box');
     doAjax('GET', `/get-user/${encodeURIComponent(activeUser)}`, xhr => {
       let user = JSON.parse(xhr.responseText);
       headerText.innerText = `Welcome, ${user.name}`;
+      box.innerHTML = '';
+      user.albums.map(row => {
+        doAjax('GET', `/get-album/${row.albumId}`, xhr => {
+          let album = JSON.parse(xhr.responseText);
+          box.innerHTML += `
+          <div class="albumContainer">
+            <div class="album">${album.name}</div>
+          </div>
+          `;
+        });
+      });
     });
   } else if (page === 'admin') {
     content.innerHTML = adminHtml();
