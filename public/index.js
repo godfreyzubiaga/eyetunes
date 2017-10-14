@@ -142,12 +142,33 @@ function userProfile() {
   `;
 }
 
+function albumHtml() {
+  return `
+    <div>
+      <p id="logout" onclick="logout()">Logout</p>
+    </div>
+    <div id="main-content">
+      <p id="album-name">Album Name</p>
+      <div id="box">
+        <table style="width: 80%; margin: 0 auto; text-align: center;" id="song-list">
+          
+        </table>
+      </div>
+      <div>
+        <hr>
+        <button class="btn">Add Songs</button>
+        <button class="btn">Delete Album</button>
+      </div>
+    </div>
+  `;
+}
+
 function logout() {
   activeUser = '';
   changeContent('login');
 }
 
-function changeContent(page) {
+function changeContent(page, albumId) {
   if (page === 'login') {
     content.innerHTML = loginHtml();
   } else if (page === 'register') {
@@ -157,7 +178,7 @@ function changeContent(page) {
     };
     regUsernameField = document.getElementById('username');
     regPasswordField = document.getElementById('password');
-  } else if (page === 'user' && activeUser) {
+  } else if (page === 'user') {
     content.innerHTML = userHtml();
   } else if (page === 'artist') {
     content.innerHTML = artistHtml();
@@ -172,7 +193,7 @@ function changeContent(page) {
           let album = JSON.parse(xhr.responseText);
           box.innerHTML += `
           <div class="albumContainer">
-            <div class="album">${album.name}</div>
+            <div class="album" onclick="selectAlbum('${album._id}')">${album.name}</div>
           </div>
           `;
         });
@@ -210,6 +231,27 @@ function changeContent(page) {
       });
     });
   }
+}
+
+function selectAlbum(id) {
+  content.innerHTML = albumHtml();
+  let songListTable = document.getElementById('song-list');
+  let removeBtn = `<button class="btn" onclick="confirm('are you sure?')">Remove</button>`;
+  songListTable.innerHTML = `
+    <caption><h3 style="margin: 0">Song List</h3></caption>
+    <tr style="position: sticky">
+      <th style="width: 33%">Title</th>
+      <th style="width: 33%">Year</th>
+      <th style="width: 33%">Action</th>
+    </tr>
+  `;
+  songListTable.innerHTML += `
+    <tr>
+      <td>Sample Title</td>
+      <td>2017</td>
+      <td>${removeBtn}</td>
+    </tr>
+  `;
 }
 
 function login(username, password) {
