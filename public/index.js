@@ -61,8 +61,8 @@ function registerHtml() {
 
 function userHtml() {
   return `
-  <p id="logout" onclick="logout()">Logout</p>
-  <p id="profile" onclick="changeContent('profile')">Profile</p>
+  <p id="logout" class="links" onclick="logout()">Logout</p>
+  <p id="profile" class="links" onclick="changeContent('profile')">Profile</p>
   <br>
   <br>
   <br>
@@ -89,7 +89,7 @@ function userHtml() {
 
 function adminHtml() {
   return `
-    <p id="logout" onclick="logout()">Logout</p>
+    <p id="logout" class="links" onclick="logout()">Logout</p>
     <br>
     <br>
     <div id="main-content">
@@ -101,7 +101,7 @@ function adminHtml() {
 function artistHtml() {
   return `
     <div>
-      <p id="logout" onclick="logout()">Logout</p>
+      <p id="logout" class="links" onclick="logout()">Logout</p>
     </div>
     <br>
     <br>
@@ -120,8 +120,8 @@ function artistHtml() {
 function userProfile() {
   return `
     <div>
-      <p id="logout" onclick="logout()">Logout</p>
-      <p id="searchLink" onclick="changeContent('user')">Search Music</p>
+      <p id="logout" class="links" onclick="logout()">Logout</p>
+      <p id="searchLink" class="links" onclick="changeContent('user')">Search Music</p>
     </div>
     <br>
     <br>
@@ -145,12 +145,13 @@ function userProfile() {
 function albumHtml() {
   return `
     <div>
-      <p id="logout" onclick="logout()">Logout</p>
+      <p id="logout" class="links" onclick="logout()">Logout</p>
+      <p id="profile" class="links" onclick="changeContent('artist')">Profile</p>
     </div>
     <div id="main-content">
-      <p id="album-name">Album Name</p>
+      <h2 id="album-name">Album Name</h2>
       <div id="box">
-        <table style="width: 80%; margin: 0 auto; text-align: center;" id="song-list">
+        <table id="song-list">
           
         </table>
       </div>
@@ -236,22 +237,34 @@ function changeContent(page, albumId) {
 function selectAlbum(id) {
   content.innerHTML = albumHtml();
   let songListTable = document.getElementById('song-list');
+  let albumName = document.getElementById('album-name');
   let removeBtn = `<button class="btn" onclick="confirm('are you sure?')">Remove</button>`;
   songListTable.innerHTML = `
     <caption><h3 style="margin: 0">Song List</h3></caption>
     <tr style="position: sticky">
-      <th style="width: 33%">Title</th>
-      <th style="width: 33%">Year</th>
-      <th style="width: 33%">Action</th>
+      <th class="songRow">Title</th>
+      <th class="songRow">Year</th>
+      <th class="songRow">Action</th>
     </tr>
   `;
-  songListTable.innerHTML += `
-    <tr>
-      <td>Sample Title</td>
-      <td>2017</td>
-      <td>${removeBtn}</td>
-    </tr>
-  `;
+  doAjax('GET', `/get-album/${id}`, xhr => {
+    let album = JSON.parse(xhr.responseText);
+    albumName.innerText = album.name;
+  });
+
+  doAjax('GET', `/get-songs-from-album/${encodeURIComponent(id)}`, xhr => {
+    let songs = JSON.parse(xhr.responseText);
+    
+    songs.map(song => {
+      songListTable.innerHTML += `
+      <tr>
+        <td>${song.name}</td>
+        <td>${song.year}</td>
+        <td>${removeBtn}</td>
+      </tr>
+    `;
+    });
+  });
 }
 
 function login(username, password) {

@@ -131,3 +131,19 @@ app.get('/get-album/:albumId', (request, response) => {
     }
   });
 });
+
+app.get('/get-songs-from-album/:albumId', (request, response) => {
+  let id = request.params.albumId;
+  let songs = [];
+  db.collection('albums').findOne({ _id: ObjectId(id) }, (error, album) => {
+    album.songList.map((row, index) => {
+      db.collection('songs').findOne({_id: row.songId}, (error, song) => {
+        songs.push(song);
+        if(index === album.songList.length - 1) {
+          response.json(songs);
+        }
+      });
+    });
+  });
+});
+
