@@ -111,7 +111,7 @@ function artistHtml() {
       <div id="box">
       </div>
       <div>
-        <button id="submitBtn">Add Album</button>
+        <button id="submitBtn" onclick="changeContent('addAlbum')">Add Album</button>
       </div>
     </div>
   `;
@@ -194,7 +194,7 @@ function changeContent(page, albumId) {
           let album = JSON.parse(xhr.responseText);
           box.innerHTML += `
           <div class="albumContainer">
-            <div class="album" onclick="selectAlbum('${album._id}')">${album.name}</div>
+            <div class="album" onclick="editAlbum('${album._id}')">${album.name}</div>
           </div>
           `;
         });
@@ -231,14 +231,17 @@ function changeContent(page, albumId) {
         </tr>`;
       });
     });
+  } else if (page === 'addAlbum') {
+    content.innerHTML = addAlbum();
   }
 }
 
-function selectAlbum(id) {
+function editAlbum(id) {
   content.innerHTML = albumHtml();
   let songListTable = document.getElementById('song-list');
   let albumName = document.getElementById('album-name');
   let removeBtn = `<button class="btn" onclick="confirm('are you sure?')">Remove</button>`;
+  
   songListTable.innerHTML = `
     <caption><h3 style="margin: 0">Song List</h3></caption>
     <tr style="position: sticky">
@@ -247,6 +250,7 @@ function selectAlbum(id) {
       <th class="songRow">Action</th>
     </tr>
   `;
+  
   doAjax('GET', `/get-album/${id}`, xhr => {
     let album = JSON.parse(xhr.responseText);
     albumName.innerText = album.name;
@@ -254,7 +258,6 @@ function selectAlbum(id) {
 
   doAjax('GET', `/get-songs-from-album/${encodeURIComponent(id)}`, xhr => {
     let songs = JSON.parse(xhr.responseText);
-    
     songs.map(song => {
       songListTable.innerHTML += `
       <tr>
@@ -265,6 +268,24 @@ function selectAlbum(id) {
     `;
     });
   });
+}
+
+function addAlbum() {
+  return `
+    <div>
+      <p id="logout" class="links" onclick="logout()">Logout</p>
+      <p id="profile" class="links" onclick="changeContent('artist')">Profile</p>
+    </div>
+    <div id="content-container">
+      <label for="albumNameField" id="labelForAlbumName"><h2>Album Name</h2></label>
+      <input type="text" class="fields" id="albumNameField" placeholder="Album Name">
+      <div>
+        <button class="btn">Create Album</button>
+        <br>
+        <button class="btn" onclick="changeContent('artist')">Cancel</button>
+      </div>
+    </div>
+  `;
 }
 
 function login(username, password) {
