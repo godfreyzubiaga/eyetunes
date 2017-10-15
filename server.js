@@ -147,3 +147,24 @@ app.get('/get-songs-from-album/:albumId', (request, response) => {
   });
 });
 
+app.post('/create-album/:albumName&:userId', (request, response) => {
+  let name = request.params.albumName;
+  let userId = request.params.userId;
+  if(name) {
+    db.collection('albums').insertOne({'name': name}, (error, document) => {
+      if (!error) {
+        db.collection('users').update({_id: ObjectId(`${userId}`)}, 
+          {$addToSet: {albums: {albumId:  ObjectId(document.insertedId)}}},
+          (error, success) => {
+            if (!error) {
+              response.json({success: true});
+            } else {
+              response.json({success: false});
+            }
+        });
+      } else {
+        response.json({success: false});
+      }
+    })
+  }
+});

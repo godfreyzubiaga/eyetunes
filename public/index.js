@@ -232,7 +232,7 @@ function changeContent(page, albumId) {
       });
     });
   } else if (page === 'addAlbum') {
-    content.innerHTML = addAlbum();
+    content.innerHTML = addAlbumHtml();
   }
 }
 
@@ -250,7 +250,7 @@ function editAlbum(id) {
       <th class="songRow">Action</th>
     </tr>
   `;
-  
+
   doAjax('GET', `/get-album/${id}`, xhr => {
     let album = JSON.parse(xhr.responseText);
     albumName.innerText = album.name;
@@ -270,7 +270,7 @@ function editAlbum(id) {
   });
 }
 
-function addAlbum() {
+function addAlbumHtml() {
   return `
     <div>
       <p id="logout" class="links" onclick="logout()">Logout</p>
@@ -280,12 +280,26 @@ function addAlbum() {
       <label for="albumNameField" id="labelForAlbumName"><h2>Album Name</h2></label>
       <input type="text" class="fields" id="albumNameField" placeholder="Album Name">
       <div>
-        <button class="btn">Create Album</button>
+        <button class="btn" onclick="createAlbum(albumNameField.value)">Create Album</button>
         <br>
         <button class="btn" onclick="changeContent('artist')">Cancel</button>
       </div>
     </div>
   `;
+}
+
+function createAlbum(albumName) {
+  if (albumName) {
+    doAjax('POST', `/create-album/${encodeURIComponent(albumName)}&${encodeURIComponent(activeUser)}`, xhr => {
+      let response = JSON.parse(xhr.responseText);
+      if (response.success) {
+        alert('Success');
+        changeContent('artist');
+      } else {
+        alert('Failed');
+      }
+    })
+  }
 }
 
 function login(username, password) {
