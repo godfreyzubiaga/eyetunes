@@ -192,11 +192,12 @@ function changeContent(page, albumId) {
       user.albums.map(row => {
         doAjax('GET', `/get-album/${row.albumId}`, xhr => {
           let album = JSON.parse(xhr.responseText);
+          console.log(album);
           box.innerHTML += `
-          <div class="albumContainer">
-            <div class="album" onclick="editAlbum('${album._id}')">${album.name}</div>
-          </div>
-          `;
+            <div onclick="editAlbum('${album._id}')" class="albumContainer">
+              <div class="album">${album.name}</div>
+            </div>
+            `;
         });
       });
     });
@@ -241,7 +242,7 @@ function editAlbum(id) {
   let songListTable = document.getElementById('song-list');
   let albumName = document.getElementById('album-name');
   let removeBtn = `<button class="btn" onclick="confirm('are you sure?')">Remove</button>`;
-  
+
   songListTable.innerHTML = `
     <caption><h3 style="margin: 0">Song List</h3></caption>
     <tr style="position: sticky">
@@ -257,16 +258,18 @@ function editAlbum(id) {
   });
 
   doAjax('GET', `/get-songs-from-album/${encodeURIComponent(id)}`, xhr => {
-    let songs = JSON.parse(xhr.responseText);
-    songs.map(song => {
-      songListTable.innerHTML += `
-      <tr>
-        <td>${song.name}</td>
-        <td>${song.year}</td>
-        <td>${removeBtn}</td>
-      </tr>
-    `;
-    });
+    let response = JSON.parse(xhr.responseText);
+    if (response.result !== 'none') {
+      response.map(song => {
+        songListTable.innerHTML += `
+        <tr>
+          <td>${song.name}</td>
+          <td>${song.year}</td>
+          <td>${removeBtn}</td>
+        </tr>
+      `;
+      });
+    }
   });
 }
 
@@ -290,15 +293,21 @@ function addAlbumHtml() {
 
 function createAlbum(albumName) {
   if (albumName) {
-    doAjax('POST', `/create-album/${encodeURIComponent(albumName)}&${encodeURIComponent(activeUser)}`, xhr => {
-      let response = JSON.parse(xhr.responseText);
-      if (response.success) {
-        alert('Success');
-        changeContent('artist');
-      } else {
-        alert('Failed');
+    doAjax(
+      'POST',
+      `/create-album/${encodeURIComponent(albumName)}&${encodeURIComponent(
+        activeUser
+      )}`,
+      xhr => {
+        let response = JSON.parse(xhr.responseText);
+        if (response.success) {
+          alert('Success');
+          changeContent('artist');
+        } else {
+          alert('Failed');
+        }
       }
-    })
+    );
   }
 }
 
