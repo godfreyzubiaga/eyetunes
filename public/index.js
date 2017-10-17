@@ -8,162 +8,6 @@ window.onload = () => {
   content.innerHTML = loginHtml();
 };
 
-function loginHtml() {
-  return `
-  <div id="content-container">
-    <h1>Login</h1>
-    <div id="field-container">
-      <label class="labels" for="username">Username</label>
-      <br>
-      <input type="text" name="username" id="username" class="fields" required/>
-      <br>
-      <label class="labels" for="password">Passsword</label>
-      <br>
-      <input type="password" name="password" id="password" class="fields" required/>
-      <br>
-      <button type="submit" onclick="login(username.value, password.value)" id="submitBtn">Submit</button>
-      <br>
-      <span id="registerLink" onclick="changeContent('register')">Register here</span>
-    </div>
-  </div>`;
-}
-
-function registerHtml() {
-  return `
-    <div id="content-container">
-      <h1>Register</h1>
-      <div id="field-container">
-        <label class="labels" for="fullname">Full Name / Band Name</label>
-        <br>
-        <input type="text" name="name" id="fullname" class="fields"/>
-        <br>
-        <label class="labels" for="username">Username</label>
-        <br>
-        <input type="text" name="username" id="username" class="fields" onkeyup="checkIfAvailable(username.value)"/>
-        <br>
-        <label class="labels" for="password" >Passsword</label>
-        <p id="subLabel">(6 or more characters)</p>
-        <br>
-        <input type="password" name="password" id="password" class="fields" onkeyup="passwordCheck(password.value)">
-        <div id="options">
-          <input type="radio" name="role" id="artist" value="artist">
-          <label for="artist">Artist</label>
-          <input type="radio" name="role" id="user" checked value="user">
-          <label for="user">User</label>
-        </div>
-        <button type="submit" id="submitBtn" onclick="register(fullname.value, username.value, password.value)">Submit</button>
-        <br>
-        <span id="loginLink" onclick="changeContent('login')">Login here</span>
-      </div>
-    </div>
-  `;
-}
-
-function userHtml() {
-  return `
-  <p id="logout" class="links" onclick="logout()">Logout</p>
-  <p id="profile" class="links" onclick="changeContent('profile')">Profile</p>
-  <br>
-  <br>
-  <br>
-  <div id="main-content">
-    <div id="search-bar-container">
-      <input type="text" id="search-bar" name="keyword" placeholder="Song, Artist or Album" />
-    </div>
-    <div id="search-btn-container">
-      <button id="search" onclick="search(search-bar.value)">Search</button>
-    </div>
-    <div id="options">
-      <input type="radio" name="option" id="song" checked value="song">
-      <label for="song">Song</label>
-      <input type="radio" name="option" id="album" value="album">
-      <label for="album">Album</label>
-      <input type="radio" name="option" id="artist" value="artist">
-      <label for="artist">Artist</label>
-    </div>
-    <div id="result-container">
-    </div>
-  </div>
-  `;
-}
-
-function adminHtml() {
-  return `
-    <p id="logout" class="links" onclick="logout()">Logout</p>
-    <br>
-    <br>
-    <div id="main-content">
-      <h1>Admin Page</h1>
-    </div>
-  `;
-}
-
-function artistHtml() {
-  return `
-    <div>
-      <p id="logout" class="links" onclick="logout()">Logout</p>
-    </div>
-    <br>
-    <br>
-    <div id="main-content">
-      <h1 id="headerText"></h1>
-      <h2>My albums</h2>
-      <div id="box">
-      </div>
-      <div>
-        <button id="submitBtn" onclick="changeContent('addAlbum')">Add Album</button>
-      </div>
-    </div>
-  `;
-}
-
-function userProfile() {
-  return `
-    <div>
-      <p id="logout" class="links" onclick="logout()">Logout</p>
-      <p id="searchLink" class="links" onclick="changeContent('user')">Search Music</p>
-    </div>
-    <br>
-    <br>
-    <br>
-    <div id="main-content">
-      <h1 id="name"></h1>
-      <div id="songList">
-        <table id="table">
-          <tr id="main-row">
-            <th id="songTitleRow">Song Title</th>
-            <th id="artistRow">Artist</th>
-            <th id="albumRow">Album</th>
-            <th id="yearRow">Year</th>
-          </tr>
-        </table>
-      </div>
-    </div>
-  `;
-}
-
-function albumHtml() {
-  return `
-    <div>
-      <p id="logout" class="links" onclick="logout()">Logout</p>
-      <p id="profile" class="links" onclick="changeContent('artist')">Profile</p>
-    </div>
-    <div id="main-content">
-      <h2 id="album-name">Album Name</h2>
-      <div id="box">
-        <table id="song-list">
-          
-        </table>
-      </div>
-      <div>
-        <hr>
-        <button class="btn">Add Songs</button>
-        <button class="btn">Delete Album</button>
-      </div>
-    </div>
-  `;
-}
-
 function logout() {
   activeUser = '';
   changeContent('login');
@@ -273,23 +117,6 @@ function editAlbum(id) {
   });
 }
 
-function addAlbumHtml() {
-  return `
-    <div>
-      <p id="logout" class="links" onclick="logout()">Logout</p>
-      <p id="profile" class="links" onclick="changeContent('artist')">Profile</p>
-    </div>
-    <div id="content-container">
-      <label for="albumNameField" id="labelForAlbumName"><h2>Album Name</h2></label>
-      <input type="text" class="fields" id="albumNameField" placeholder="Album Name">
-      <div>
-        <button class="btn" onclick="createAlbum(albumNameField.value)">Create Album</button>
-        <br>
-        <button class="btn" onclick="changeContent('artist')">Cancel</button>
-      </div>
-    </div>
-  `;
-}
 
 function createAlbum(albumName) {
   if (albumName) {
@@ -344,9 +171,10 @@ function register(name, username, password) {
   } else {
     doAjax(
       'POST',
-      `/register/${encodeURIComponent(name)}&${encodeURIComponent(
-        username
-      )}&${encodeURIComponent(password)}&${encodeURIComponent(role)}`,
+      `/register/${encodeURIComponent(name)}
+      &${encodeURIComponent(username)}
+      &${encodeURIComponent(password)}
+      &${encodeURIComponent(role)}`,
       showSuccess
     );
   }
