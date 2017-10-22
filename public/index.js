@@ -75,6 +75,7 @@ function changeContent(page, albumId) {
           <td id="albumRow">${row.album}</td>
           <td id="yearRow">${row.year}</td>
         </tr>`;
+        artists = '';
       });
     });
   } else if (page === 'addAlbum') {
@@ -89,6 +90,7 @@ function editAlbum(id) {
   selectedAlbum = id;
   container = document.getElementById('main-content');
   let songListTable = document.getElementById('song-list');
+  let box = document.getElementById('box');
   let albumName = document.getElementById('album-name');
   let removeBtn
 
@@ -119,6 +121,7 @@ function editAlbum(id) {
       `;
       });
     }
+    box.innerHTML += '<h4>------End------</h4>';
   });
 }
 
