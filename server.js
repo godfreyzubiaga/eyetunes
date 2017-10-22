@@ -100,7 +100,7 @@ app.get('/get-user/:userId', (request, response) => {
 });
 
 app.get('/get-songs/:userId', (request, response) => {
-  let userId = request.params.userId;
+  let userId = (request.params.userId).trim();
   let song;
   let songList = [];
   db.collection('users').findOne({ _id: ObjectId(userId) }, (error, user) => {
@@ -140,8 +140,8 @@ app.get('/get-album/:albumId', (request, response) => {
 app.get('/get-songs-from-album/:albumId', (request, response) => {
   let id = request.params.albumId;
   let songs = [];
-  db.collection('albums').findOne({ _id: ObjectId(id) }, (error, album) => {
-    if(album.songList) {
+  db.collection('albums').findOne({ _id: ObjectId(id) }, (error, album) => {   
+    if(album.songList.length >= 1) {
       album.songList.map((row, index) => {
         db.collection('songs').findOne({_id: row.songId}, (error, song) => {
           songs.push(song);
@@ -203,7 +203,7 @@ app.post('/remove-song/:id&:albumId', (request, response) => {
   let albumId = (request.params.albumId).trim();
   db.collection('albums')
   .update({_id: ObjectId(albumId)}, 
-  {$pull: {songList: {$elemMatch: {songId: ObjectId(songId)}}}}, 
+  {$pull: {songList: {songId: ObjectId(songId)}}},
   (error, result) => {
     if (!error) {
       db.collection('songs')
