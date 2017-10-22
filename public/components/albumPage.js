@@ -14,7 +14,6 @@ function albumHtml() {
       <div>
         <hr>
         <button class="btn" onclick="changeContent('addSong')">Add Song</button>
-        <button class="btn">Delete Album</button>
       </div>
     </div>
   `;
