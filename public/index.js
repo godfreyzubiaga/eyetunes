@@ -69,7 +69,7 @@ function changeContent(page, albumId) {
           }
         });
         table.innerHTML += `
-        <tr class="songColumn">
+        <tr class="song-column">
           <td>${row.name}</td>
           <td id="artistRow">${artists}</td>
           <td id="albumRow">${row.album}</td>
@@ -97,9 +97,9 @@ function editAlbum(id) {
   songListTable.innerHTML = `
     <caption><h3 style="margin: 0">Song List</h3></caption>
     <tr style="position: sticky">
-      <th class="songRow">Title</th>
-      <th class="songRow">Year</th>
-      <th class="songRow">Action</th>
+      <th class="row">Title</th>
+      <th class="row">Year</th>
+      <th class="row">Action</th>
     </tr>
   `;
 
@@ -221,6 +221,43 @@ function register(name, username, password) {
       showSuccess
     );
   }
+}
+
+function search(keyword) {
+  let categories = document.getElementsByName('category');
+  let resultTable = document.getElementById('table');
+  resultTable.innerHTML = `
+    <tr id="search-results">
+      <th class="row">Song Title</th>
+      <th class="row">Artist</th>
+      <th class="row">Album</th>
+      <th class="row">Year</th>
+      <th class="row">Action</th>
+    </tr>
+  `;
+  let category;
+  categories.forEach(row => {
+    if (row.checked) {
+      category = row.value;
+    }
+  });
+  if (keyword.trim() === '') {
+    keyword = '.';
+  }
+  doAjax('GET', `/search/${encodeURIComponent(keyword)}&${encodeURIComponent(category)}`, xhr => {
+    let songs = JSON.parse(xhr.responseText);
+    songs.map(row => {
+      resultTable.innerHTML += `
+        <tr>
+          <td class="row">${row.title}</td>
+          <td class="row">${row.artist}</td>
+          <td class="row">${row.album}</td>
+          <td class="row">${row.year}</td>
+          <td class="row"><button class="btn" onclick="alert('purchased')">Purchase</button></td>
+        </tr>
+      `;
+    });
+  });
 }
 
 function checkIfAvailable(username) {
