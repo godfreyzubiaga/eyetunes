@@ -3,6 +3,8 @@ let activeUser;
 let regUsernameField;
 let regPasswordField;
 let mainRow;
+let container;
+let selectedAlbum;
 window.onload = () => {
   content = document.getElementById('content');
   content.innerHTML = loginHtml();
@@ -36,7 +38,6 @@ function changeContent(page, albumId) {
       user.albums.map(row => {
         doAjax('GET', `/get-album/${row.albumId}`, xhr => {
           let album = JSON.parse(xhr.responseText);
-          console.log(album);
           box.innerHTML += `
             <div onclick="editAlbum('${album._id}')" class="albumContainer">
               <div class="album">${album.name}</div>
@@ -78,11 +79,15 @@ function changeContent(page, albumId) {
     });
   } else if (page === 'addAlbum') {
     content.innerHTML = addAlbumHtml();
+  } else if (page === 'addSong') {
+    container.innerHTML = addSongHtml();
   }
 }
 
 function editAlbum(id) {
   content.innerHTML = albumHtml();
+  selectedAlbum = id;
+  container = document.getElementById('main-content');
   let songListTable = document.getElementById('song-list');
   let albumName = document.getElementById('album-name');
   let removeBtn = `<button class="btn" onclick="confirm('are you sure?')">Remove</button>`;
@@ -117,6 +122,13 @@ function editAlbum(id) {
   });
 }
 
+function addSong(title, year) {
+  if (title === '' || year === '') {
+    alert('Please fill up the form completely');
+  } else {
+    console.log(title, year);
+  }
+}
 
 function createAlbum(albumName) {
   if (albumName) {
