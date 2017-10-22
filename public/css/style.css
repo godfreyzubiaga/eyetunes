@@ -27,6 +27,7 @@ body {
     border-radius: 5px;
   }
   #box {
+    max-height: 250px;
     width: 60%;
     padding: 30px;
     border: 1px solid lightgray;
@@ -52,6 +53,9 @@ body {
   #box {
     width: 100%;
     border: none;
+  }
+  .albumContainer {
+    width: 80%;
   }
   .album {
     width: 50%;
@@ -262,7 +266,7 @@ table {
 }
 
 #box {
-  max-height: 250px;
+  
   overflow-y: auto;
   margin: auto;
   text-align: center;
