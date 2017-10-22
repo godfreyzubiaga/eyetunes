@@ -1,5 +1,6 @@
 function addSongHtml() {
   return `
+  <div id="sub-container">
     <h2>Add song</h2>
     <div>
       <p>
@@ -18,5 +19,6 @@ function addSongHtml() {
       <br>
       <button class="btn" onclick="editAlbum(selectedAlbum)">Cancel</button>
     </div>
+  </div> 
   `;
 }

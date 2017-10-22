@@ -6,12 +6,14 @@ function artistHtml() {
     <br>
     <br>
     <div id="main-content">
-      <h1 id="headerText"></h1>
-      <h2>My albums</h2>
-      <div id="box">
-      </div>
-      <div>
-        <button id="submitBtn" onclick="changeContent('addAlbum')">Add Album</button>
+      <div id="sub-container">
+        <h1 id="headerText"></h1>
+        <h2>My albums</h2>
+        <div id="box">
+        </div>
+        <div>
+          <button id="submitBtn" onclick="changeContent('addAlbum')">Add Album</button>
+        </div>
       </div>
     </div>
   `;
