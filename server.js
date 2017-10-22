@@ -21,8 +21,8 @@ MongoClient.connect(dbUrl, (error, database) => {
 });
 
 app.get('/login/:username&:password', (request, response) => {
-  let username = request.params.username;
-  let password = request.params.password;
+  let username = (request.params.username).trim();
+  let password = (request.params.password).trim();
 
   db.collection('users').findOne({
     username: {
@@ -46,29 +46,29 @@ app.get('/login/:username&:password', (request, response) => {
 });
 
 app.post('/register/:name&:username&:password&:role', (request, response) => {
-  let name = request.params.name;
-  let username = request.params.username;
-  let password = request.params.password;
-  let role = 'admin';
+  let name = (request.params.name).trim();
+  let username = (request.params.username).trim();
+  let password = (request.params.password).trim();
+  let role = (request.params.role).trim();
   if (!name || !username || !password || !role || password.length <= 6) {
     response.json({ registerSuccessful: false });
   } else {
     bcrypt.genSalt(12, (error, salt) => {
       bcrypt.hash(password, salt, (error, encryptedPassword) => {
         db.collection('users').findOne({ username: username }, (error, result) => {
-            if (!result.username) {
-              db.collection('users').insert({
-                name: name,
-                username: username,
-                role: role,
-                password: encryptedPassword
-              }, () => {
-                response.json({ registerSuccessful: true });
-              });
-            } else {
-              response.json({ registerSuccessful: false });
-            }
-          });
+          if (result === null || !result.username) {
+            db.collection('users').insert({
+              name: name,
+              username: username,
+              role: role,
+              password: encryptedPassword
+            }, () => {
+              response.json({ registerSuccessful: true });
+            });
+          } else {
+            response.json({ registerSuccessful: false });
+          }
+        });
       });
     });
   }
@@ -80,7 +80,12 @@ app.get('/checkIfAvailable/:username', (request, response) => {
     response.json({ available: true });
   } else {
     db.collection('users').findOne({ username: username }, (error, results) => {
-      results.length >= 1? response.json({ available: false }) : response.json({ available: true });
+      console.log(results);
+      if (results !== null) {
+        results.length >= 1 ? response.json({ available: false }) : response.json({ available: true });      
+      } else {
+        response.json({ available: true });
+      }
     });
   }
 });
@@ -191,4 +196,26 @@ app.post('/insert-song/:albumId&:songTitle&:yearReleased', (request, response) =
   } else {
     response.json({success: false});  
   }
+});
+
+app.post('/remove-song/:id&:albumId', (request, response) => {
+  let songId = (request.params.id).trim();
+  let albumId = (request.params.albumId).trim();
+  db.collection('albums')
+  .update({_id: ObjectId(albumId)}, 
+  {$pull: {songList: {$elemMatch: {songId: ObjectId(songId)}}}}, 
+  (error, result) => {
+    if (!error) {
+      db.collection('songs')
+        .deleteOne({_id: ObjectId(songId)}, (error, result) => {
+          if (!error) {
+            response.json({success: true});
+          } else {
+            response.json({success: false});
+          }
+      });
+    } else {
+      response.json({success: false});
+    }
+  });
 });

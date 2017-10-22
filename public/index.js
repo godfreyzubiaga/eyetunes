@@ -90,7 +90,7 @@ function editAlbum(id) {
   container = document.getElementById('main-content');
   let songListTable = document.getElementById('song-list');
   let albumName = document.getElementById('album-name');
-  let removeBtn = `<button class="btn" onclick="confirm('are you sure?')">Remove</button>`;
+  let removeBtn
 
   songListTable.innerHTML = `
     <caption><h3 style="margin: 0">Song List</h3></caption>
@@ -114,7 +114,7 @@ function editAlbum(id) {
         <tr>
           <td>${song.name}</td>
           <td>${song.year}</td>
-          <td>${removeBtn}</td>
+          <td><button class="btn" onclick="removeSong('${song._id}')">Remove</button></td>
         </tr>
       `;
       });
@@ -126,19 +126,32 @@ function addSong(title, year) {
   if (title === '' || year === '' ||year <= 1800 ||year > new Date().getFullYear() ) {
     alert('Please fill up the form completely/correctly');
   } else {
-    console.log(`somethinghere${selectedAlbum}`);
     doAjax('POST', `/insert-song/
     ${encodeURIComponent(selectedAlbum)}
     &${encodeURIComponent(title)}
     &${encodeURIComponent(year)}`,
       xhr => {
         let response = JSON.parse(xhr.responseText);
-        console.log(response);
         if (response.success) {
           alert('Song was successfully added.');
           editAlbum(selectedAlbum);
         } else {
           alert('something is wrong');
+        }
+      }
+    );
+  }
+}
+
+function removeSong(id) {
+  let confirmed = confirm('are you sure?');
+  if (confirmed) {
+    doAjax('POST', 
+      `/remove-song/${encodeURIComponent(id)}&${encodeURIComponent(selectedAlbum)}`, 
+      xhr => {
+        let response = JSON.parse(xhr.responseText);
+        if (response.success) {
+          editAlbum(selectedAlbum);
         }
       }
     );
