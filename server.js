@@ -158,7 +158,7 @@ app.post('/create-album/:albumName&:userId', (request, response) => {
     db.collection('albums').insertOne({'name': name}, (error, document) => {
       if (!error) {
         db.collection('users').update({_id: ObjectId(`${userId}`)}, 
-          {$addToSet: {albums: {albumId:  ObjectId(document.insertedId)}}},
+          {$addToSet: {albums: {albumId:  ObjectId(`${document.insertedId}`)}}},
           (error, success) => {
             if (!error) {
               response.json({success: true});
@@ -170,5 +170,25 @@ app.post('/create-album/:albumName&:userId', (request, response) => {
         response.json({success: false});
       }
     })
+  }
+});
+
+app.post('/insert-song/:albumId&:songTitle&:yearReleased', (request, response) => {
+  let albumId = (request.params.albumId).trim();
+  let songTitle = request.params.songTitle;
+  let yearReleased = request.params.yearReleased;
+  if (albumId && songTitle && yearReleased) {
+    let song = {'name': songTitle, 'year': yearReleased};
+    db.collection('songs').insertOne(song, (error, document) => {
+      db.collection('albums').update({_id: ObjectId(`${albumId}`)},
+        {$addToSet: {songList: {songId:  ObjectId(`${document.insertedId}`)}}},
+        (error, success) => {
+          if (!error) {
+            response.json({success: true});
+          }
+      });
+    });
+  } else {
+    response.json({success: false});  
   }
 });

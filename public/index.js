@@ -4,7 +4,7 @@ let regUsernameField;
 let regPasswordField;
 let mainRow;
 let container;
-let selectedAlbum;
+let selectedAlbum = '';
 window.onload = () => {
   content = document.getElementById('content');
   content.innerHTML = loginHtml();
@@ -123,10 +123,25 @@ function editAlbum(id) {
 }
 
 function addSong(title, year) {
-  if (title === '' || year === '') {
-    alert('Please fill up the form completely');
+  if (title === '' || year === '' ||year <= 1800 ||year > new Date().getFullYear() ) {
+    alert('Please fill up the form completely/correctly');
   } else {
-    console.log(title, year);
+    console.log(`somethinghere${selectedAlbum}`);
+    doAjax('POST', `/insert-song/
+    ${encodeURIComponent(selectedAlbum)}
+    &${encodeURIComponent(title)}
+    &${encodeURIComponent(year)}`,
+      xhr => {
+        let response = JSON.parse(xhr.responseText);
+        console.log(response);
+        if (response.success) {
+          alert('Song was successfully added.');
+          editAlbum(selectedAlbum);
+        } else {
+          alert('something is wrong');
+        }
+      }
+    );
   }
 }
 
