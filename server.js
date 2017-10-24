@@ -57,7 +57,7 @@ app.post('/register/:name&:username&:password&:role', (request, response) => {
   let username = request.params.username.trim();
   let password = request.params.password.trim();
   let role = request.params.role.trim();
-  if (!name || !username || !password || !role || password.length <= 6) {
+  if (!name || !username || !password || !role || password.length < 6) {
     response.json({ registerSuccessful: false });
   } else {
     bcrypt.genSalt(12, (error, salt) => {
@@ -75,7 +75,6 @@ app.post('/register/:name&:username&:password&:role', (request, response) => {
             role: role,
             password: encryptedPassword
           },
-
           handleInsertResponse
         );
       } else {
