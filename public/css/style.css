@@ -306,6 +306,7 @@ table {
 
 .row {
   width: 1fr;
+  word-wrap: break-word;
 }
 
 .song-column:hover {
