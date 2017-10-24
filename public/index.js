@@ -29,8 +29,16 @@ function changeContent(page, albumId) {
   } else if (page === 'user') {
     content.innerHTML = userHtml();
     doAjax('GET', `/get-songs/${encodeURIComponent(activeUser)}`, xhr => {
-      let songs = JSON.parse(xhr.responseText);
+      let songs = JSON.parse(xhr.responseText).list;
+      console.log(songs);
+      if (songs.length >= 1) {
+        songs.map(addSongToPurchasedSong);
+      }
     });
+
+    function addSongToPurchasedSong(row) {
+      purchasedSongs.push(row.id);
+    }
   } else if (page === 'artist') {
     content.innerHTML = artistHtml();
     let headerText = document.getElementById('headerText');
@@ -42,7 +50,7 @@ function changeContent(page, albumId) {
       user.albums.map(handleAlbumRow);
     });
 
-   const handleAlbumRow = function (row) {
+   function handleAlbumRow(row) {
       doAjax('GET', `/get-album/${row.albumId}`, xhr => {
         let album = JSON.parse(xhr.responseText);
         box.innerHTML += `
@@ -257,17 +265,32 @@ function search(keyword) {
 
   doAjax('GET', `/search/${encodeURIComponent(keyword)}&${encodeURIComponent(category)}`, xhr => {
     let songs = JSON.parse(xhr.responseText);
-    songs.map(row => {
+    let changeAction = false;
+    songs.map(addSongToResult);
+
+    function addSongToResult(row, index) {
       resultTable.innerHTML += `
         <tr>
           <td class="row">${row.title}</td>
           <td class="row">${row.artist}</td>
           <td class="row">${row.album}</td>
           <td class="row">${row.year}</td>
-          <td class="row"><button class="btn" onclick="alert('${row.id}')">Purchase</button></td>
+          <td class="row" id="${row.id}"><button class="btn" onclick="alert('${row.id}')">Purchase</button></td>
         </tr>
       `;
-    });
+      console.log(row.id);
+      if (index === songs.length - 1) {
+        console.log(purchasedSongs);
+        purchasedSongs.map(changeActionForPurchasedSong);
+      }
+    }
+
+    function changeActionForPurchasedSong(id) {
+      let actionRow = document.getElementById(`${id}`);
+      if (actionRow) {
+        actionRow.innerHTML = 'Owned';
+      }
+    }
   });
 }
 
