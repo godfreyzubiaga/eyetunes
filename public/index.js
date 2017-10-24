@@ -5,6 +5,7 @@ let regPasswordField;
 let mainRow;
 let container;
 let selectedAlbum = '';
+let purchasedSongs = [];
 window.onload = () => {
   content = document.getElementById('content');
   content.innerHTML = loginHtml();
@@ -27,6 +28,9 @@ function changeContent(page, albumId) {
     regPasswordField = document.getElementById('password');
   } else if (page === 'user') {
     content.innerHTML = userHtml();
+    doAjax('GET', `/get-songs/${encodeURIComponent(activeUser)}`, xhr => {
+      let songs = JSON.parse(xhr.responseText);
+    });
   } else if (page === 'artist') {
     content.innerHTML = artistHtml();
     let headerText = document.getElementById('headerText');
@@ -35,17 +39,20 @@ function changeContent(page, albumId) {
       let user = JSON.parse(xhr.responseText);
       headerText.innerText = `Welcome, ${user.name}`;
       box.innerHTML = '';
-      user.albums.map(row => {
-        doAjax('GET', `/get-album/${row.albumId}`, xhr => {
-          let album = JSON.parse(xhr.responseText);
-          box.innerHTML += `
-            <div onclick="editAlbum('${album._id}')" class="albumContainer">
-              <div class="album">${album.name}</div>
-            </div>
-            `;
-        });
-      });
+      user.albums.map(handleAlbumRow);
     });
+
+   const handleAlbumRow = function (row) {
+      doAjax('GET', `/get-album/${row.albumId}`, xhr => {
+        let album = JSON.parse(xhr.responseText);
+        box.innerHTML += `
+          <div onclick="editAlbum('${album._id}')" class="albumContainer">
+            <div class="album">${album.name}</div>
+          </div>
+          `;
+      });
+    }
+
   } else if (page === 'admin') {
     content.innerHTML = adminHtml();
   } else if (page === 'profile') {
@@ -226,6 +233,8 @@ function register(name, username, password) {
 function search(keyword) {
   let categories = document.getElementsByName('category');
   let resultTable = document.getElementById('table');
+  let category;
+  
   resultTable.innerHTML = `
     <tr id="search-results">
       <th class="row">Song Title</th>
@@ -235,15 +244,17 @@ function search(keyword) {
       <th class="row">Action</th>
     </tr>
   `;
-  let category;
+
   categories.forEach(row => {
     if (row.checked) {
       category = row.value;
     }
   });
+  
   if (keyword.trim() === '') {
     keyword = '.';
   }
+
   doAjax('GET', `/search/${encodeURIComponent(keyword)}&${encodeURIComponent(category)}`, xhr => {
     let songs = JSON.parse(xhr.responseText);
     songs.map(row => {
@@ -253,7 +264,7 @@ function search(keyword) {
           <td class="row">${row.artist}</td>
           <td class="row">${row.album}</td>
           <td class="row">${row.year}</td>
-          <td class="row"><button class="btn" onclick="alert('purchased')">Purchase</button></td>
+          <td class="row"><button class="btn" onclick="alert('${row.id}')">Purchase</button></td>
         </tr>
       `;
     });

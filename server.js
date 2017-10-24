@@ -21,56 +21,75 @@ MongoClient.connect(dbUrl, (error, database) => {
 });
 
 app.get('/login/:username&:password', (request, response) => {
-  let username = (request.params.username).trim();
-  let password = (request.params.password).trim();
-  
-  db.collection('users').findOne({
-    username: {
-      $regex: `${username}`,
-      $options: 'i'
-    }
-  },
-  (error, result) => {
-    if (result !==   null) {
-      bcrypt.compare(password, result.password, (error, samePassword) => {
-        if (samePassword) {
-          response.json(result);
-        } else {
-          response.json({ passwordMatch: false });
-        }
-      });
+  let username = request.params.username.trim();
+  let password = request.params.password.trim();
+  let result;
+  db.collection('users').findOne(
+    {
+      username: {
+        $regex: `${username}`,
+        $options: 'i'
+      }
+    },
+    handleUserResult
+  );
+
+  function handleUserResult(error, dbResult) {
+    if (dbResult !== null) {
+      result = dbResult;
+      bcrypt.compare(password, dbResult.password, handleSamePassword);
     } else {
       response.json({ userFound: false });
     }
-  });
+  }
+
+  function handleSamePassword(error, samePassword) {
+    if (samePassword) {
+      response.json(result);
+    } else {
+      response.json({ passwordMatch: false });
+    }
+  }
 });
 
 app.post('/register/:name&:username&:password&:role', (request, response) => {
-  let name = (request.params.name).trim();
-  let username = (request.params.username).trim();
-  let password = (request.params.password).trim();
-  let role = (request.params.role).trim();
+  let name = request.params.name.trim();
+  let username = request.params.username.trim();
+  let password = request.params.password.trim();
+  let role = request.params.role.trim();
   if (!name || !username || !password || !role || password.length <= 6) {
     response.json({ registerSuccessful: false });
   } else {
     bcrypt.genSalt(12, (error, salt) => {
-      bcrypt.hash(password, salt, (error, encryptedPassword) => {
-        db.collection('users').findOne({ username: username }, (error, result) => {
-          if (result === null || !result.username) {
-            db.collection('users').insert({
-              name: name,
-              username: username,
-              role: role,
-              password: encryptedPassword
-            }, () => {
-              response.json({ registerSuccessful: true });
-            });
-          } else {
-            response.json({ registerSuccessful: false });
-          }
-        });
-      });
+      bcrypt.hash(password, salt, handleEncryptedPassword);
     });
+  }
+
+  function handleEncryptedPassword(error, encryptedPassword) {
+    db.collection('users').findOne({ username: username }, (error, result) => {
+      if (result === null || !result.username) {
+        db.collection('users').insert(
+          {
+            name: name,
+            username: username,
+            role: role,
+            password: encryptedPassword
+          },
+
+          handleInsertResponse
+        );
+      } else {
+        response.json({ registerSuccessful: false });
+      }
+    });
+  }
+
+  function handleInsertResponse(error) {
+    if (!error) {
+      response.json({ registerSuccessful: true });
+    } else {
+      response.json({ registerSuccessful: false });
+    }
   }
 });
 
@@ -79,221 +98,336 @@ app.get('/checkIfAvailable/:username', (request, response) => {
   if (username === 'admin') {
     response.json({ available: true });
   } else {
-    db.collection('users').findOne({ username: username }, (error, results) => {
-      if (results !== null) {
-        results.length >= 1 ? response.json({ available: false }) : response.json({ available: true });      
-      } else {
-        response.json({ available: true });
-      }
-    });
+    db.collection('users').findOne({ username: username }, handleUserResult);
+  }
+
+  function handleUserResult(error, results) {
+    if (results !== null) {
+      results.length >= 1
+        ? response.json({ available: false })
+        : response.json({ available: true });
+    } else {
+      response.json({ available: true });
+    }
   }
 });
 
 app.get('/get-user/:userId', (request, response) => {
   let id = request.params.userId;
-  db.collection('users').findOne({ _id: ObjectId(id) }, (error, result) => {
+  db.collection('users').findOne({ _id: ObjectId(id) }, handleUserResult);
+
+  function handleUserResult(error, result) {
     if (!error) {
       response.json(result);
     }
-  });
+  }
 });
 
 app.get('/get-songs/:userId', (request, response) => {
-  let userId = (request.params.userId).trim();
+  let userId = request.params.userId.trim();
   let song;
+  let songsLength;
   let songList = [];
-  db.collection('users').findOne({ _id: ObjectId(userId) }, (error, user) => {
-    let songIds = user.songList;
-    songIds.map((row, index) => {
-      db.collection('songs').findOne({ _id: row.songId }, (error, songResult) => {
-          db.collection('albums').findOne({songList: { $elemMatch: { songId: ObjectId(songResult._id) } }},
-          (error, album) => {
-            db.collection('users').find({ albums: { $elemMatch: { albumId: album._id } } }).toArray(
-              (error, artistResult) => {
-                song = {
-                  name: songResult.name,
-                  artist: artistResult,
-                  album: album.name,
-                  year: songResult.year
-                };
-                songList.push(song);
-                if (index === songIds.length - 1) {
-                  response.json({ list: songList });
-                }
-              });
-          });
-        });
-    });
-  });
+  db.collection('users').findOne({ _id: ObjectId(userId) }, handleUserResult);
+
+  function handleUserResult(error, user) {
+    let songs = user.songList;
+    songsLength = songs.length;
+    songs.map(findSong);
+  }
+
+  function findSong(row) {
+    db.collection('songs').findOne({ _id: row.songId }, handleSongResult);
+  }
+
+  function handleSongResult(error, songResult) {
+    db
+      .collection('albums')
+      .findOne(
+        { songList: { $elemMatch: { songId: ObjectId(songResult._id) } } },
+        (error, album) => {
+          db
+            .collection('users')
+            .find({ albums: { $elemMatch: { albumId: album._id } } })
+            .toArray((error, artistResult) => {
+              song = {
+                name: songResult.name,
+                artist: artistResult,
+                album: album.name,
+                year: songResult.year,
+                id: songResult._id
+              };
+              songList.push(song);
+              if (songList.length === songsLength) {
+                response.json({ list: songList });
+              }
+            });
+        }
+      );
+  }
 });
 
 app.get('/get-album/:albumId', (request, response) => {
   let id = request.params.albumId;
-  db.collection('albums').findOne({ _id: ObjectId(id) }, (error, result) => {
+  db.collection('albums').findOne({ _id: ObjectId(id) }, handleAlbumResult);
+
+  function handleAlbumResult(error, result) {
     if (!error) {
       response.json(result);
     }
-  });
+  }
 });
 
 app.get('/get-songs-from-album/:albumId', (request, response) => {
   let id = request.params.albumId;
+  let albumSongsLength;
   let songs = [];
-  db.collection('albums').findOne({ _id: ObjectId(id) }, (error, album) => {
-    if (!album.songList) {
-      response.json({result: 'none'});
+  db.collection('albums').findOne({ _id: ObjectId(id) }, handleAlbumResult);
+
+  function handleAlbumResult(error, album) {
+    let albumSongs = album.songList;
+    if (albumSongs.length < 1) {
+      response.json({ result: 'none' });
     } else {
-      if (album.songList.length >= 1) {
-        album.songList.map((row, index) => {
-          db.collection('songs').findOne({_id: row.songId}, (error, song) => {
-            songs.push(song);
-            if(index === album.songList.length - 1) {
-              response.json(songs);
-            }
-          });
-        });
+      albumSongsLength = albumSongs.length;
+      if (albumSongsLength >= 1) {
+        albumSongs.map(findSong);
       }
     }
-    
-  });
+
+    function findSong(row) {
+      db.collection('songs').findOne({ _id: row.songId }, handleSongResult);
+    }
+  }
+
+  function handleSongResult(error, song) {
+    songs.push(song);
+    if (songs.length === albumSongsLength) {
+      response.json(songs);
+    }
+  }
 });
 
 app.post('/create-album/:albumName&:userId', (request, response) => {
   let name = request.params.albumName;
   let userId = request.params.userId;
-  if(name) {
-    db.collection('albums').insertOne({'name': name}, (error, document) => {
-      if (!error) {
-        db.collection('users').update({_id: ObjectId(`${userId}`)}, 
-          {$addToSet: {albums: {albumId:  ObjectId(`${document.insertedId}`)}}},
-          (error, success) => {
-            if (!error) {
-              response.json({success: true});
-            } else {
-              response.json({success: false});
-            }
-        });
-      } else {
-        response.json({success: false});
-      }
-    })
+
+  if (name) {
+    db.collection('albums').insertOne({ name: name }, handleAlbumResult);
+  }
+
+  function handleAlbumResult(error, document) {
+    if (!error) {
+      db.collection('users').update(
+        { _id: ObjectId(`${userId}`) },
+        {
+          $addToSet: {
+            albums: { albumId: ObjectId(`${document.insertedId}`) }
+          }
+        },
+        handleInsertResponse
+      );
+    } else {
+      response.json({ success: false });
+    }
+  }
+
+  function handleInsertResponse(error, success) {
+    if (!error) {
+      response.json({ success: true });
+    } else {
+      response.json({ success: false });
+    }
   }
 });
 
-app.post('/insert-song/:albumId&:songTitle&:yearReleased', (request, response) => {
-  let albumId = (request.params.albumId).trim();
-  let songTitle = request.params.songTitle;
-  let yearReleased = request.params.yearReleased;
-  if (albumId && songTitle && yearReleased) {
-    let song = {'name': songTitle, 'year': yearReleased};
-    db.collection('songs').insertOne(song, (error, document) => {
-      db.collection('albums').update({_id: ObjectId(`${albumId}`)},
-        {$addToSet: {songList: {songId:  ObjectId(`${document.insertedId}`)}}},
-        (error, success) => {
-          if (!error) {
-            response.json({success: true});
+app.post(
+  '/insert-song/:albumId&:songTitle&:yearReleased',
+  (request, response) => {
+    let albumId = request.params.albumId.trim();
+    let songTitle = request.params.songTitle;
+    let yearReleased = request.params.yearReleased;
+    if (albumId && songTitle && yearReleased) {
+      let song = { name: songTitle, year: yearReleased };
+      db.collection('songs').insertOne(song, handleResponse);
+    } else {
+      response.json({ success: false });
+    }
+
+    function handleResponse(error, document) {
+      db.collection('albums').update(
+        { _id: ObjectId(`${albumId}`) },
+        {
+          $addToSet: {
+            songList: { songId: ObjectId(`${document.insertedId}`) }
           }
-      });
-    });
-  } else {
-    response.json({success: false});
+        },
+        handleUpdateResponse
+      );
+    }
+
+    function handleUpdateResponse(error, success) {
+      if (!error) {
+        response.json({ success: true });
+      }
+    }
   }
-});
+);
 
 app.post('/remove-song/:id&:albumId', (request, response) => {
-  let songId = (request.params.id).trim();
-  let albumId = (request.params.albumId).trim();
-  db.collection('albums')
-  .update({_id: ObjectId(albumId)}, 
-  {$pull: {songList: {songId: ObjectId(songId)}}},
-  (error, result) => {
+  let songId = request.params.id.trim();
+  let albumId = request.params.albumId.trim();
+  db
+    .collection('albums')
+    .update(
+      { _id: ObjectId(albumId) },
+      { $pull: { songList: { songId: ObjectId(songId) } } },
+      handleUpdateResponse
+    );
+
+  function handleUpdateResponse(error, result) {
     if (!error) {
-      db.collection('songs')
-        .deleteOne({_id: ObjectId(songId)}, (error, result) => {
-          if (!error) {
-            response.json({success: true});
-          } else {
-            response.json({success: false});
-          }
-      });
+      db
+        .collection('songs')
+        .deleteOne({ _id: ObjectId(songId) }, handleDeleteSong);
     } else {
-      response.json({success: false});
+      response.json({ success: false });
     }
-  });
+  }
+
+  function handleDeleteSong(error, result) {
+    if (!error) {
+      response.json({ success: true });
+    } else {
+      response.json({ success: false });
+    }
+  }
 });
 
+//temporary solution (CALLBACK HELL IS REAL HELL!!!). will change this soon.
 app.get('/search/:keyword&:category', (request, response) => {
-  let keyword = (request.params.keyword).trim();
-  let category = (request.params.category).trim();
+  let keyword = request.params.keyword.trim();
+  let category = request.params.category.trim();
   let searchResult = [];
-
   if (category !== null) {
     if (category === 'song') {
-      db.collection('songs').find({name: { $regex: `${keyword}`, $options: 'i'}}).toArray((error, songs) => {
-        if (songs.length >= 1) {
-          songs.map((song, index) => {
-            db.collection('albums').findOne({songList: {$elemMatch: {songId: ObjectId(song._id)}}}, 
-            (error, album) => {
-              if (album !== null) {
-                db.collection('users').findOne({albums: {$elemMatch: {albumId: ObjectId(album._id)}}}, 
-                (error, artist) => {
-                  if (artist !== null) {
-                    searchResult.push({title: song.name, artist: artist.name, album: album.name, year: song.year});                  
-                    if (index === songs.length - 1) {
-                      response.json(searchResult);
+      db
+        .collection('songs')
+        .find({ name: { $regex: `${keyword}`, $options: 'i' } })
+        .toArray((error, songs) => {
+          if (songs.length >= 1) {
+            songs.map((song, index) => {
+              db
+                .collection('albums')
+                .findOne(
+                  { songList: { $elemMatch: { songId: ObjectId(song._id) } } },
+                  (error, album) => {
+                    if (album !== null) {
+                      db.collection('users').findOne({
+                        albums: {
+                          $elemMatch: { albumId: ObjectId(album._id) }
+                        }
+                      },
+                      (error, artist) => {
+                        if (artist !== null) {
+                          searchResult.push({
+                            title: song.name,
+                            artist: artist.name,
+                            album: album.name,
+                            year: song.year,
+                            id: song._id
+                          });
+                          if (searchResult.length === songs.length) {
+                            response.json(searchResult);
+                          }
+                        }
+                      });
                     }
                   }
-                });
-              }
+                );
             });
-          });
-        }
-      });
+          }
+        });
     } else if (category === 'artist') {
-      db.collection('users').find({role: 'artist', name: {$regex: `${keyword}`, $options: 'i'}}).toArray((error, artists) => {
-        if (artists.length >= 1) {
-          artists.map((artist, artistIndex) => {
-            artist.albums.map((album, albumIndex) => {
-            db.collection('albums').findOne({_id: ObjectId(album.albumId)},
-              (error, albumResult) => {
-                albumResult.songList.map((songRow, songIndex) => {
-                  db.collection('songs').findOne({_id: songRow.songId}, (error, song) => {
-                    searchResult.push({title: song.name, artist: artist.name, album: albumResult.name, year: song.year});
-                    if (artistIndex === artists.length - 1 
-                      && albumIndex === artist.albums.length - 1 
-                      && songIndex === albumResult.songList.length - 1) {
-                      response.json(searchResult);
+      db
+        .collection('users')
+        .find({ role: 'artist', name: { $regex: `${keyword}`, $options: 'i' } })
+        .toArray((error, artists) => {
+          if (artists.length >= 1) {
+            artists.map((artist, artistIndex) => {
+              artist.albums.map((album, albumIndex) => {
+                db
+                  .collection('albums')
+                  .findOne(
+                    { _id: ObjectId(album.albumId) },
+                    (error, albumResult) => {
+                      albumResult.songList.map((songRow, songIndex) => {
+                        db
+                          .collection('songs')
+                          .findOne({ _id: songRow.songId }, (error, song) => {
+                            searchResult.push({
+                              title: song.name,
+                              artist: artist.name,
+                              album: albumResult.name,
+                              year: song.year,
+                              id: song._id
+                            });
+                            if (
+                              artistIndex === artists.length - 1 &&
+                              albumIndex === artist.albums.length - 1 &&
+                              songIndex === albumResult.songList.length - 1
+                            ) {
+                              response.json(searchResult);
+                            }
+                          });
+                      });
                     }
-                  });
-                });
+                  );
               });
             });
-          });
-        }
-      });
+          }
+        });
     } else if (category === 'album') {
-      db.collection('albums').find({name: {$regex: `${keyword}`, $options: 'i'}}).toArray((error, albumResult) => {
-        if (albumResult.length >= 1) {
-          albumResult.map((album, albumIndex) => {
-            db.collection('users').findOne({role: 'artist', albums: {$elemMatch: {albumId: ObjectId(album._id)}}}, (error, artist) => {
-              album.songList.map((song, songIndex) => {
-                db.collection('songs').find({_id: song.songId}).toArray((error, songs) => {
-                  if (songs.length >= 1) {                                                                        
-                    songs.map((songRow, index) => {
-                      searchResult.push({title: songRow.name, artist: artist.name, album: album.name, year: songRow.year});
-                      if (albumIndex === albumResult.length - 1 
-                        && songIndex === album.songList.length - 1
-                        && index ===  songs.length - 1) {
-                        response.json(searchResult);
+      db
+        .collection('albums')
+        .find({ name: { $regex: `${keyword}`, $options: 'i' } })
+        .toArray((error, albumResult) => {
+          if (albumResult.length >= 1) {
+            albumResult.map((album, albumIndex) => {
+              db.collection('users').findOne({
+                role: 'artist',
+                albums: { $elemMatch: { albumId: ObjectId(album._id) } }
+              },
+              (error, artist) => {
+                album.songList.map((song, songIndex) => {
+                  db
+                    .collection('songs')
+                    .find({ _id: song.songId })
+                    .toArray((error, songs) => {
+                      if (songs.length >= 1) {
+                        songs.map((songRow, index) => {
+                          searchResult.push({
+                            title: songRow.name,
+                            artist: artist.name,
+                            album: album.name,
+                            year: songRow.year,
+                            id: song._id
+                          });
+                          if (
+                            albumIndex === albumResult.length - 1 &&
+                            songIndex === album.songList.length - 1 &&
+                            index === songs.length - 1
+                          ) {
+                            response.json(searchResult);
+                          }
+                        });
                       }
                     });
-                  }
                 });
               });
             });
-          });
-        }
-      });
+          }
+        });
     }
   }
 });
