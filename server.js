@@ -186,13 +186,17 @@ app.get('/get-songs-from-album/:albumId', (request, response) => {
 
   function handleAlbumResult(error, album) {
     let albumSongs = album.songList;
-    if (albumSongs.length < 1) {
-      response.json({ result: 'none' });
-    } else {
-      albumSongsLength = albumSongs.length;
-      if (albumSongsLength >= 1) {
-        albumSongs.map(findSong);
+    if (albumSongs) {
+      if (albumSongs.length < 1) {
+        response.json({ result: 'none' });
+      } else {
+        albumSongsLength = albumSongs.length;
+        if (albumSongsLength >= 1) {
+          albumSongs.map(findSong);
+        }
       }
+    } else {
+      response.json({ result: 'none' });
     }
 
     function findSong(row) {
