@@ -130,9 +130,13 @@ app.get('/get-songs/:userId', (request, response) => {
   db.collection('users').findOne({ _id: ObjectId(userId) }, handleUserResult);
 
   function handleUserResult(error, user) {
-    let songs = user.songList;
-    songsLength = songs.length;
-    songs.map(findSong);
+    if (user.songList) {
+      let songs = user.songList;
+      songsLength = songs.length;
+      songs.map(findSong);      
+    } else {
+
+    }
   }
 
   function findSong(row) {
@@ -236,10 +240,35 @@ app.post('/create-album/:albumName&:userId', (request, response) => {
   }
 
   function handleInsertResponse(error, success) {
-    if (!error) {
+    if (error === null) {
       response.json({ success: true });
     } else {
       response.json({ success: false });
+    }
+  }
+});
+
+app.post('/add-song-to-own-list/:songId&:userId', (request, response) => {
+  let songId = request.params.songId.trim();
+  let userId = request.params.userId.trim();
+  db.collection('users').update(
+    { _id: ObjectId(userId) },
+    {
+      $addToSet: {
+        songList: { songId: ObjectId(`${songId}`) }
+      }
+    },
+    {
+      $upsert: true
+    },
+    handleUpdateResponse
+  );
+
+  function handleUpdateResponse(error, updateResponse) {
+    if (error === null) {
+      response.json({success: true});
+    } else {
+      response.json({success: false});
     }
   }
 });

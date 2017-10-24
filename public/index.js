@@ -28,9 +28,9 @@ function changeContent(page, albumId) {
     regPasswordField = document.getElementById('password');
   } else if (page === 'user') {
     content.innerHTML = userHtml();
+    purchasedSongs = [];
     doAjax('GET', `/get-songs/${encodeURIComponent(activeUser)}`, xhr => {
       let songs = JSON.parse(xhr.responseText).list;
-      console.log(songs);
       if (songs.length >= 1) {
         songs.map(addSongToPurchasedSong);
       }
@@ -74,24 +74,26 @@ function changeContent(page, albumId) {
 
     doAjax('GET', `/get-songs/${encodeURIComponent(activeUser)}`, xhr => {
       let songs = JSON.parse(xhr.responseText).list;
-      let artists = '';
-      songs.map(row => {
-        row.artist.map((artist, index) => {
-          if (index === row.artist.length - 1) {
-            artists += artist.name + ' ';
-          } else {
-            artists += artist.name + ', ';
-          }
+      if (!songs.empty) {
+        let artists = '';
+        songs.map(row => {
+          row.artist.map((artist, index) => {
+            if (index === row.artist.length - 1) {
+              artists += artist.name + ' ';
+            } else {
+              artists += artist.name + ', ';
+            }
+          });
+          table.innerHTML += `
+          <tr class="song-column">
+            <td>${row.name}</td>
+            <td id="artistRow">${artists}</td>
+            <td id="albumRow">${row.album}</td>
+            <td id="yearRow">${row.year}</td>
+          </tr>`;
+          artists = '';
         });
-        table.innerHTML += `
-        <tr class="song-column">
-          <td>${row.name}</td>
-          <td id="artistRow">${artists}</td>
-          <td id="albumRow">${row.album}</td>
-          <td id="yearRow">${row.year}</td>
-        </tr>`;
-        artists = '';
-      });
+      } 
     });
   } else if (page === 'addAlbum') {
     content.innerHTML = addAlbumHtml();
@@ -107,7 +109,7 @@ function editAlbum(id) {
   let songListTable = document.getElementById('song-list');
   let box = document.getElementById('box');
   let albumName = document.getElementById('album-name');
-  let removeBtn
+  let removeBtn;
 
   songListTable.innerHTML = `
     <caption><h3 style="margin: 0">Song List</h3></caption>
@@ -275,7 +277,7 @@ function search(keyword) {
           <td class="row">${row.artist}</td>
           <td class="row">${row.album}</td>
           <td class="row">${row.year}</td>
-          <td class="row" id="${row.id}"><button class="btn" onclick="alert('${row.id}')">Purchase</button></td>
+          <td class="row" id="${row.id}"><button class="btn" onclick="addSongToOwnSongList('${row.id}')">Add Song</button></td>
         </tr>
       `;
       console.log(row.id);
@@ -292,6 +294,21 @@ function search(keyword) {
       }
     }
   });
+}
+
+function addSongToOwnSongList(songId) {
+  doAjax('POST', `/add-song-to-own-list/${encodeURIComponent(songId)}&${encodeURIComponent(activeUser)}`, handleResponse);
+
+  function handleResponse(xhr) {
+    let response = JSON.parse(xhr.responseText);
+    if (response.success) {
+      alert('song successfully added to personal list');
+      changeContent('profile');
+    } else {
+      alert('Something went wrong');
+    }
+  }
+
 }
 
 function checkIfAvailable(username) {
