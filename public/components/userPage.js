@@ -8,15 +8,7 @@ function userHtml() {
   <div id="main-content">
     <div id="sub-container"> 
       <div id="search-bar-container">
-        <input type="text" id="searchBar" name="keyword" placeholder="Song, Artist or Album" />
-      </div>
-      <div id="options">
-        <input type="radio" name="category" id="song" checked value="song">
-        <label for="song">Song</label>
-        <input type="radio" name="category" id="album" value="album">
-        <label for="album">Album</label>
-        <input type="radio" name="category" id="artist" value="artist">
-        <label for="artist">Artist</label>
+        <input type="text" id="searchBar" name="keyword" placeholder="Song Title" />
       </div>
       <div id="search-btn-container">
         <button id="search" onclick="search(searchBar.value)">Search</button>

@@ -241,10 +241,7 @@ function register(name, username, password) {
 }
 
 function search(keyword) {
-  let categories = document.getElementsByName('category');
   let resultTable = document.getElementById('table');
-  let category;
-  
   resultTable.innerHTML = `
     <tr id="search-results">
       <th class="row">Song Title</th>
@@ -254,20 +251,13 @@ function search(keyword) {
       <th class="row">Action</th>
     </tr>
   `;
-
-  categories.forEach(row => {
-    if (row.checked) {
-      category = row.value;
-    }
-  });
-  
+   
   if (keyword.trim() === '') {
-    keyword = '.';
+    keyword = ' ';
   }
 
-  doAjax('GET', `/search/${encodeURIComponent(keyword)}&${encodeURIComponent(category)}`, xhr => {
+  doAjax('GET', `/search/${encodeURIComponent(keyword)}`, xhr => {
     let songs = JSON.parse(xhr.responseText);
-    let changeAction = false;
     songs.map(addSongToResult);
 
     function addSongToResult(row, index) {
@@ -280,9 +270,7 @@ function search(keyword) {
           <td class="row" id="${row.id}"><button class="btn" onclick="addSongToOwnSongList('${row.id}')">Add Song</button></td>
         </tr>
       `;
-      console.log(row.id);
       if (index === songs.length - 1) {
-        console.log(purchasedSongs);
         purchasedSongs.map(changeActionForPurchasedSong);
       }
     }
@@ -298,7 +286,6 @@ function search(keyword) {
 
 function addSongToOwnSongList(songId) {
   doAjax('POST', `/add-song-to-own-list/${encodeURIComponent(songId)}&${encodeURIComponent(activeUser)}`, handleResponse);
-
   function handleResponse(xhr) {
     let response = JSON.parse(xhr.responseText);
     if (response.success) {
@@ -308,7 +295,6 @@ function addSongToOwnSongList(songId) {
       alert('Something went wrong');
     }
   }
-
 }
 
 function checkIfAvailable(username) {
