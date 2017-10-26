@@ -3,10 +3,12 @@ const MongoClient = require('mongodb').MongoClient;
 const ObjectId = require('mongodb').ObjectId;
 const path = require('path');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
 const app = express();
 const port = process.env.PORT || 8084;
 const dbUrl = 'mongodb://admin:eyetunesadmin@ds013495.mlab.com:13495/eyetunes';
+const tokenSecret = 'eyetunessecretstuff';
 let db;
 
 app.use(express.static(path.join(process.cwd(), 'public/')));
@@ -45,7 +47,11 @@ app.get('/login/:username&:password', (request, response) => {
 
   function handleSamePassword(error, samePassword) {
     if (samePassword) {
-      response.json(result);
+      let id = result._id;
+      jwt.sign({id}, tokenSecret, (error, heresTheToken) => {
+        result.token = heresTheToken;
+        response.json(result);     
+      });
     } else {
       response.json({ passwordMatch: false });
     }
@@ -394,30 +400,42 @@ app.get('/search/:keyword', (request, response) => {
 });
 
 app.post('/pay-subscription/:id&:subscriptionType&:phoneNumber', (request, response) => {
-    let id = request.params.id.trim();
-    let subscriptionType = request.params.subscriptionType.trim();
-    let phoneNumber = request.params.phoneNumber.trim();
-    let date = new Date();
-    
-    db
-      .collection('users')
-      .update(
-        { _id: ObjectId(id) },
+
+  let id = request.params.id.trim();
+  let subscriptionType = request.params.subscriptionType.trim();
+  let phoneNumber = request.params.phoneNumber.trim();
+  let date = new Date();
+  
+  db
+    .collection('users')
+    .update(
+      { _id: ObjectId(id) },
+      {
+        $set: 
         {
-          $set: 
-          {
-            subscribed: true,
-            dateSubscribed: date, 
-            subscriptionType: subscriptionType, 
-            phoneNumber: phoneNumber 
-          }
-        },
-      (error, document)=> {
-        if (!error) {
-          response.json({success: true});
-        } else {
-          response.json({success: false});
+          subscribed: true,
+          dateSubscribed: date, 
+          subscriptionType: subscriptionType, 
+          phoneNumber: phoneNumber 
         }
-      });
+      },
+    (error, document)=> {
+      if (!error) {
+        response.json({success: true});
+      } else {
+        response.json({success: false});
+      }
+    });
   }
 );
+
+app.get('/verify-and-get-userId/:token', (request, response) => {
+  let token = (request.params.token).trim();
+  jwt.verify(token, tokenSecret, (error, decoded) => {
+    if (!error) {
+      response.json({verifiedUser: true, id: decoded.id});
+    } else {
+      response.json({verifiedUser: false});
+    }
+  });
+});

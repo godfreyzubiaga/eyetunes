@@ -10,12 +10,41 @@ let subscribed;
 let price;
 window.onload = () => {
   content = document.getElementById('content');
-  changeContent('login');
+  verifyToken();
 };
 
 function logout() {
-  activeUser = '';
-  changeContent('login');
+  if (localStorage.getItem('token')) {
+    activeUser = '';
+    localStorage.clear();
+    changeContent('login');
+  }
+}
+
+function verifyToken() {
+  doAjax('GET', 
+  `/verify-and-get-userId/${encodeURIComponent(localStorage.getItem('token'))}`, 
+    xhr => {
+      let response = JSON.parse(xhr.responseText);
+      if (response.verifiedUser) {
+        loadUser(response.id);
+        activeUser = response.id;
+      } else {
+        changeContent('login');
+      }
+  });
+}
+
+function loadUser(id) {
+  doAjax('GET', `/get-user/${encodeURIComponent(id)}`, xhr => {
+    const response = JSON.parse(xhr.responseText);
+      activeUser = response._id;
+      if (response.role === 'user' && !response.subscribed) {
+        changeContent('subscribe');
+      } else {
+        changeContent(response.role);
+      }
+  });
 }
 
 function changeContent(page, albumId) {
@@ -219,15 +248,12 @@ function login(username, password) {
         const data = JSON.parse(xhr.responseText);
         if (data._id) {
           activeUser = data._id;
-          if (data.role === 'user') {
-            if (data.subscribed) {
-              changeContent(data.role);
-            } else {
-              changeContent('subscribe');
-            }
+          if (data.role === 'user' && !data.subscribed) {
+            changeContent('subscribe');
           } else {
             changeContent(data.role);
           }
+          localStorage.setItem('token', data.token);
         } else {
           alert('User not found');
         }
