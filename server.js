@@ -73,7 +73,11 @@ app.post('/register/:name&:username&:password&:role', (request, response) => {
             name: name,
             username: username,
             role: role,
-            password: encryptedPassword
+            password: encryptedPassword,
+            subscribed: false,
+            dateSubscribed: 'none',
+            subscriptionType: 'none',
+            phoneNumber: 'none'
           },
           handleInsertResponse
         );
@@ -93,7 +97,7 @@ app.post('/register/:name&:username&:password&:role', (request, response) => {
 });
 
 app.get('/checkIfAvailable/:username', (request, response) => {
-  let username = (request.params.username).trim();
+  let username = request.params.username.trim();
   if (username === 'admin') {
     response.json({ available: true });
   } else {
@@ -343,7 +347,10 @@ app.get('/search/:keyword', (request, response) => {
     keyword = '.';
   }
 
-  db.collection('songs').find({ name: { $regex: `${keyword}`, $options: 'i' } }).toArray(handleSongResult);
+  db
+    .collection('songs')
+    .find({ name: { $regex: `${keyword}`, $options: 'i' } })
+    .toArray(handleSongResult);
 
   function handleSongResult(error, songs) {
     if (songs.length >= 1) {
@@ -359,7 +366,8 @@ app.get('/search/:keyword', (request, response) => {
           songId: ObjectId(row._id)
         }
       }
-    }, (error, album) => {
+    },
+    (error, album) => {
       if (album !== null) {
         db.collection('users').findOne({
           albums: {
@@ -384,3 +392,32 @@ app.get('/search/:keyword', (request, response) => {
     });
   }
 });
+
+app.post('/pay-subscription/:id&:subscriptionType&:phoneNumber', (request, response) => {
+    let id = request.params.id.trim();
+    let subscriptionType = request.params.subscriptionType.trim();
+    let phoneNumber = request.params.phoneNumber.trim();
+    let date = new Date();
+    
+    db
+      .collection('users')
+      .update(
+        { _id: ObjectId(id) },
+        {
+          $set: 
+          {
+            subscribed: true,
+            dateSubscribed: date, 
+            subscriptionType: subscriptionType, 
+            phoneNumber: phoneNumber 
+          }
+        },
+      (error, document)=> {
+        if (!error) {
+          response.json({success: true});
+        } else {
+          response.json({success: false});
+        }
+      });
+  }
+);

@@ -68,8 +68,14 @@ body {
     border: 1px solid lightgray;
     box-shadow: 0 19px 38px rgba(0, 0, 0, 0.3), 0 15px 12px rgba(0, 0, 0, 0.22);
   }
-  #field-container { 
+  #field-container {
     padding: 0 80px;
+  }
+  #payment-method-container {
+    width: 400px;
+  }
+  #options {
+    display: inline;
   }
 }
 
@@ -95,6 +101,9 @@ body {
   }
   table {
     font-size: 1em;
+  } 
+  #options {
+    display: block;
   }
 }
 
@@ -117,7 +126,7 @@ body {
 #main-content {
   grid-area: content;
   display: grid;
-  grid-template-areas: 'searchBar' 'options' 'searchBtn' 'resultContainer';
+  grid-template-areas: 'searchBar' 'searchBtn' 'resultContainer';
   text-align: center;
   grid-auto-rows: repeat(1fr, 3) auto;
   width: 100%;
@@ -147,11 +156,6 @@ body {
   width: 90%;
 }
 
-#options {
-  grid-area: options;
-  font-size: 1.1em;
-}
-
 #search-btn-container {
   grid-area: searchBtn;
 }
@@ -170,10 +174,6 @@ body {
   padding: 10px;
   background: rgba(255, 255, 255, 0.8);
   color: black;
-}
-
-#options > label {
-  margin-right: 20px;
 }
 
 #searchBar {
@@ -239,8 +239,15 @@ h1 {
   border-bottom: 3px solid black;
   background: inherit;
   font-size: 1.3em;
-  width: 70%;
   margin: 0 auto 30px auto;
+}
+
+.fields {
+  width: 200px;
+}
+
+#submitBtn {
+  width: 200px;
 }
 
 #submitBtn,
@@ -252,6 +259,7 @@ h1 {
   color: white;
   cursor: pointer;
   font-family: 'Josefin Sans', sans-serif;
+  margin-bottom: 5px;
 }
 
 #registerLink,
@@ -359,4 +367,8 @@ table {
 .albumContainer:nth-child(odd) {
   background: gray;
   color: white;
+}
+
+#payment-method-container {
+  margin-bottom: 30px;
 }

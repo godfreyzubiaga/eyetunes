@@ -6,9 +6,11 @@ let mainRow;
 let container;
 let selectedAlbum = '';
 let purchasedSongs = [];
+let subscribed;
+let price;
 window.onload = () => {
   content = document.getElementById('content');
-  content.innerHTML = loginHtml();
+  changeContent('login');
 };
 
 function logout() {
@@ -99,7 +101,15 @@ function changeContent(page, albumId) {
     content.innerHTML = addAlbumHtml();
   } else if (page === 'addSong') {
     container.innerHTML = addSongHtml();
+  } else if (page === 'subscribe') {
+    content.innerHTML = paySubscriptionPage();
+    price = document.getElementById('price');
+    changePrice('monthly');
   }
+}
+
+function changePrice(subscriptionType) {
+  price.innerText = getSubscriptionPrice(subscriptionType);
 }
 
 function editAlbum(id) {
@@ -209,7 +219,15 @@ function login(username, password) {
         const data = JSON.parse(xhr.responseText);
         if (data._id) {
           activeUser = data._id;
-          changeContent(data.role);
+          if (data.role === 'user') {
+            if (data.subscribed) {
+              changeContent(data.role);
+            } else {
+              changeContent('subscribe');
+            }
+          } else {
+            changeContent(data.role);
+          }
         } else {
           alert('User not found');
         }
@@ -237,6 +255,33 @@ function register(name, username, password) {
       &${encodeURIComponent(role)}`,
       showSuccess
     );
+  }
+}
+
+function pay(phoneNumber) {
+  let subscriptionTypes = document.getElementsByName('subscriptionType');
+  let subscriptionType;
+  subscriptionTypes.forEach(row => {
+    if (row.checked) {
+      subscriptionType = row.value;
+    }
+  });
+  if (phoneNumber.length === 9) {
+    doAjax('POST', `/pay-subscription/
+    ${encodeURIComponent(activeUser)}
+    &${encodeURIComponent(subscriptionType)}
+    &${encodeURIComponent('+639' + phoneNumber)}`,
+      xhr => {
+        let response = JSON.parse(xhr.responseText);
+        if (response.success) {
+          alert('Subscribed!');
+          changeContent('user');
+        } else {
+          alert('something is wrong with the server');  
+        }
+    });
+  } else {
+    alert('Your phone number is incorrect');
   }
 }
 
