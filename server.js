@@ -1,4 +1,4 @@
-const express = require('express');
+ express = require('express');
 const MongoClient = require('mongodb').MongoClient;
 const ObjectId = require('mongodb').ObjectId;
 const path = require('path');
@@ -10,6 +10,7 @@ const port = process.env.PORT || 8084;
 const dbUrl = 'mongodb://admin:eyetunesadmin@ds013495.mlab.com:13495/eyetunes';
 const tokenSecret = 'eyetunessecretstuff';
 let db;
+let decodedId;
 
 app.use(express.static(path.join(process.cwd(), 'public/')));
 
@@ -148,22 +149,24 @@ app.get('/get-songs/:userId', (request, response) => {
       let songs = user.songList;
       songsLength = songs.length;
       songs.forEach(findSong);
+    } else {
+      response.json();
     }
   }
 
-  function findSong(row) {
-    db.collection('songs').findOne({ _id: row.songId }, handleSongResult);
+  function findSong(songId) {
+    db.collection('songs').findOne({ _id: songId }, handleSongResult);
   }
 
   function handleSongResult(error, songResult) {
     db
       .collection('albums')
       .findOne(
-        { songList: { $elemMatch: { songId: ObjectId(songResult._id) } } },
+        { songList:  ObjectId(songResult._id) },
         (error, album) => {
           db
             .collection('users')
-            .find({ albums: { $elemMatch: { albumId: album._id } } })
+            .find({ albums:  album._id } )
             .toArray((error, artistResult) => {
               song = {
                 name: songResult.name,
@@ -214,8 +217,8 @@ app.get('/get-songs-from-album/:albumId', (request, response) => {
       response.json({ result: 'none' });
     }
 
-    function findSong(row) {
-      db.collection('songs').findOne({ _id: row.songId }, handleSongResult);
+    function findSong(songId) {
+      db.collection('songs').findOne({ _id: songId }, handleSongResult);
     }
   }
 
@@ -228,34 +231,35 @@ app.get('/get-songs-from-album/:albumId', (request, response) => {
 });
 
 app.post('/create-album/:albumName&:userId', (request, response) => {
-  let name = request.params.albumName;
-  let userId = request.params.userId;
-
-  if (name) {
-    db.collection('albums').insertOne({ name: name }, handleAlbumResult);
-  }
-
-  function handleAlbumResult(error, document) {
-    if (!error) {
-      db.collection('users').update(
-        { _id: ObjectId(`${userId}`) },
-        {
-          $addToSet: {
-            albums: { albumId: ObjectId(`${document.insertedId}`) }
-          }
-        },
-        handleInsertResponse
-      );
-    } else {
-      response.json({ success: false });
+  let name = request.params.albumName.trim();
+  let userId = request.params.userId.trim();
+  if (validToken(localStorage.getItem('token'))) {
+    if (name) {
+      db.collection('albums').insertOne({ name: name }, handleAlbumResult);
     }
-  }
-
-  function handleInsertResponse(error, success) {
-    if (error === null) {
-      response.json({ success: true });
-    } else {
-      response.json({ success: false });
+  
+    function handleAlbumResult(error, document) {
+      if (!error) {
+        db.collection('users').update(
+          { _id: ObjectId(`${userId}`) },
+          {
+            $addToSet: {
+              albums: ObjectId(`${document.insertedId}`)
+            }
+          },
+          handleInsertResponse
+        );
+      } else {
+        response.json({ success: false });
+      }
+    }
+  
+    function handleInsertResponse(error, success) {
+      if (error === null) {
+        response.json({ success: true });
+      } else {
+        response.json({ success: false });
+      }
     }
   }
 });
@@ -267,11 +271,8 @@ app.post('/add-song-to-own-list/:songId&:userId', (request, response) => {
     { _id: ObjectId(userId) },
     {
       $addToSet: {
-        songList: { songId: ObjectId(`${songId}`) }
+        songList: ObjectId(`${songId}`)
       }
-    },
-    {
-      $upsert: true
     },
     handleUpdateResponse
   );
@@ -285,9 +286,7 @@ app.post('/add-song-to-own-list/:songId&:userId', (request, response) => {
   }
 });
 
-app.post(
-  '/insert-song/:albumId&:songTitle&:yearReleased',
-  (request, response) => {
+app.post('/insert-song/:albumId&:songTitle&:yearReleased', (request, response) => {
     let albumId = request.params.albumId.trim();
     let songTitle = request.params.songTitle;
     let yearReleased = request.params.yearReleased;
@@ -303,7 +302,7 @@ app.post(
         { _id: ObjectId(`${albumId}`) },
         {
           $addToSet: {
-            songList: { songId: ObjectId(`${document.insertedId}`) }
+            songList: ObjectId(`${document.insertedId}`)
           }
         },
         handleUpdateResponse
@@ -325,7 +324,7 @@ app.post('/remove-song/:id&:albumId', (request, response) => {
     .collection('albums')
     .update(
       { _id: ObjectId(albumId) },
-      { $pull: { songList: { songId: ObjectId(songId) } } },
+      { $pull: { songList: ObjectId(songId) } },
       handleUpdateResponse
     );
 
@@ -371,18 +370,12 @@ app.get('/search/:keyword', (request, response) => {
 
   function findAlbum(row) {
     db.collection('albums').findOne({
-      songList: {
-        $elemMatch: {
-          songId: ObjectId(row._id)
-        }
-      }
+      songList: ObjectId(row._id)
     },
     (error, album) => {
       if (album !== null) {
         db.collection('users').findOne({
-          albums: {
-            $elemMatch: { albumId: ObjectId(album._id) }
-          }
+          albums: ObjectId(album._id)
         },
         (error, artist) => {
           if (artist !== null) {
@@ -403,8 +396,7 @@ app.get('/search/:keyword', (request, response) => {
   }
 });
 
-app.post('/pay-subscription/:id&:subscriptionType&:phoneNumber',
-  (request, response) => {
+app.post('/pay-subscription/:id&:subscriptionType&:phoneNumber', (request, response) => {
     let id = request.params.id.trim();
     let subscriptionType = request.params.subscriptionType.trim();
     let phoneNumber = request.params.phoneNumber.trim();
@@ -430,12 +422,21 @@ app.post('/pay-subscription/:id&:subscriptionType&:phoneNumber',
 );
 
 app.get('/verify-and-get-userId/:token', (request, response) => {
-  let token = (request.params.token).trim();
+  let token = request.params.token.trim();
+  if (validToken(token) === true) {
+    response.json({ verifiedUser: true, id: decodedId });    
+  } else {
+    response.json({ verifiedUser: false });
+  }
+});
+
+function validToken(token) {
+  let valid = false;
   jwt.verify(token, tokenSecret, (error, decoded) => {
     if (!error) {
-      response.json({ verifiedUser: true, id: decoded.id });
-    } else {
-      response.json({ verifiedUser: false });
+      decodedId = decoded.id;
+      valid = true;
     }
   });
-});
+  return valid;
+}

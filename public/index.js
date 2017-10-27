@@ -39,12 +39,16 @@ function loadUser(id) {
   doAjax('GET', `/get-user/${encodeURIComponent(id)}`, xhr => {
     const response = JSON.parse(xhr.responseText);
       activeUser = response._id;
-      if (response.role === 'user' && !response.subscribed) {
-        changeContent('subscribe');
-      } else {
-        changeContent(response.role);
-      }
+      checkLandingPage(response);
   });
+}
+
+function checkLandingPage(response) {
+  if (response.role === 'user' && !response.subscribed) {
+    changeContent('subscribe');
+  } else {
+    changeContent(response.role);
+  }
 }
 
 function changeContent(page, albumId) {
@@ -85,6 +89,9 @@ function changeContent(page, albumId) {
   } else if (page === 'admin') {
     content.innerHTML = adminHtml();
   } else if (page === 'profile') {
+    if (purchasedSongs.length > 0) {
+      clearArray();
+    }
     content.innerHTML = userProfile();
     table = document.getElementById('table');
     let name = document.getElementById('name');
@@ -94,28 +101,30 @@ function changeContent(page, albumId) {
     });
 
     doAjax('GET', `/get-songs/${encodeURIComponent(activeUser)}`, xhr => {
-      let songs = JSON.parse(xhr.responseText).list;
-      console.log(songs);
-      if (songs.length >= 1) {
-        let artists = '';
-        songs.forEach(row => {
-          row.artist.forEach((artist, index) => {
-            if (index === row.artist.length - 1) {
-              artists += artist.name + ' ';
-            } else {
-              artists += artist.name + ', ';
-            }
+      let response = JSON.parse(xhr.responseText);
+      if (response) {
+        let songs = response.list;
+        if (songs.length >= 1) {
+          let artists = '';
+          songs.forEach(row => {
+            row.artist.forEach((artist, index) => {
+              if (index === row.artist.length - 1) {
+                artists += artist.name + ' ';
+              } else {
+                artists += artist.name + ', ';
+              }
+            });
+            table.innerHTML += `
+            <tr class="song-column">
+              <td>${row.name}</td>
+              <td id="artistRow">${artists}</td>
+              <td id="albumRow">${row.album}</td>
+              <td id="yearRow">${row.year}</td>
+            </tr>`;
+            artists = '';
           });
-          table.innerHTML += `
-          <tr class="song-column">
-            <td>${row.name}</td>
-            <td id="artistRow">${artists}</td>
-            <td id="albumRow">${row.album}</td>
-            <td id="yearRow">${row.year}</td>
-          </tr>`;
-          artists = '';
-        });
-      } 
+        } 
+      }
     });
   } else if (page === 'addAlbum') {
     content.innerHTML = addAlbumHtml();
@@ -129,13 +138,14 @@ function changeContent(page, albumId) {
 }
 
 function searchForPurchasedSongs() {
-  purchasedSongs = [];
   doAjax('GET', `/get-songs/${encodeURIComponent(activeUser)}`, xhr => {
-    let songs = JSON.parse(xhr.responseText).list;
-    if (songs.length >= 1) {
-      songs.forEach(addSongToPurchasedSong);
+    if (xhr.responseText) {
+      let songs = JSON.parse(xhr.responseText).list;
+      if (songs.length >= 1) {
+        songs.forEach(addSongToPurchasedSong);
+      }
     }
-  });
+  }); 
 
   function addSongToPurchasedSong(row) {
     purchasedSongs.push(row.id);
@@ -250,15 +260,11 @@ function login(username, password) {
       'GET',
       `/login/${encodeURIComponent(username)}&${encodeURIComponent(password)}`,
       xhr => {
-        const data = JSON.parse(xhr.responseText);
-        if (data._id) {
-          activeUser = data._id;
-          if (data.role === 'user' && !data.subscribed) {
-            changeContent('subscribe');
-          } else {
-            changeContent(data.role);
-          }
-          localStorage.setItem('token', data.token);
+        const response = JSON.parse(xhr.responseText);
+        if (response._id) {
+          activeUser = response._id;
+          checkLandingPage(response);
+          localStorage.setItem('token', response.token);
         } else {
           alert('User not found');
         }
@@ -328,8 +334,7 @@ function search(keyword) {
       <th class="row">Action</th>
     </tr>
   `;
-   
-  if (keyword.trim() === '') {
+  if (keyword === '') {
     keyword = ' ';
   }
   doAjax('GET', `/search/${encodeURIComponent(keyword)}`, xhr => {
@@ -348,17 +353,27 @@ function search(keyword) {
       `;
       
       if (index === songs.length - 1) {
+        console.log(purchasedSongs.length);
         purchasedSongs.forEach(changeActionForPurchasedSong);
       }
     }
 
-    function changeActionForPurchasedSong(id) {
+    function changeActionForPurchasedSong(id, index) {
       let actionRow = document.getElementById(`${id}`);
       if (actionRow) {
         actionRow.innerHTML = 'Owned';
       }
+      if (purchasedSongs.length - 1 === index) {
+        clearArray();
+      }
     }
   });
+}
+
+function clearArray() {
+  while (purchasedSongs.length > 0) {
+    purchasedSongs.pop();
+  }
 }
 
 function addSongToOwnSongList(songId) {
