@@ -353,7 +353,6 @@ function search(keyword) {
       `;
       
       if (index === songs.length - 1) {
-        console.log(purchasedSongs.length);
         purchasedSongs.forEach(changeActionForPurchasedSong);
       }
     }
