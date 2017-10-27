@@ -32,8 +32,8 @@ function paySubscriptionPage() {
 				</div>
 				<div id="payment-method-container">
 					<h3>
-						<label for="phone-number-field">Phone Number: (+639)</label>
-						<input type="tel" id="phoneNumberField" minlength="9" maxlength="9" class="fields">
+						<label for="phone-number-field">Phone Number: (+63)</label>
+						<input type="tel" id="phoneNumberField" minlength="10" maxlength="10" class="fields">
 					</h3>
 				</div>
 				<button class="btn" onclick="pay(phoneNumberField.value)">Pay</button>

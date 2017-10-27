@@ -8,6 +8,8 @@ let selectedAlbum = '';
 let purchasedSongs = [];
 let subscribed;
 let price;
+let canRegister;
+
 window.onload = () => {
   content = document.getElementById('content');
   verifyToken();
@@ -72,11 +74,13 @@ function changeContent(page, albumId) {
       let user = JSON.parse(xhr.responseText);
       headerText.innerText = `Welcome, ${user.name}`;
       box.innerHTML = '';
-      user.albums.forEach(handleAlbumRow);
+      if (user.albums) {
+        user.albums.forEach(handleAlbumRow);        
+      }
     });
 
-   function handleAlbumRow(row) {
-      doAjax('GET', `/get-album/${row.albumId}`, xhr => {
+   function handleAlbumRow(albumId) {
+      doAjax('GET', `/get-album/${albumId}`, xhr => {
         let album = JSON.parse(xhr.responseText);
         box.innerHTML += `
           <div onclick="editAlbum('${album._id}')" class="albumContainer">
@@ -233,22 +237,26 @@ function removeSong(id) {
 }
 
 function createAlbum(albumName) {
-  if (albumName) {
-    doAjax(
-      'POST',
-      `/create-album/${encodeURIComponent(albumName)}&${encodeURIComponent(
-        activeUser
-      )}`,
-      xhr => {
-        let response = JSON.parse(xhr.responseText);
-        if (response.success) {
-          alert('Success');
-          changeContent('artist');
-        } else {
-          alert('Failed');
+  let token = localStorage.getItem('token');
+  if(token) {
+    if (albumName) {
+      doAjax(
+        'POST',
+        `/create-album/
+          ${encodeURIComponent(albumName)}
+          &${encodeURIComponent(activeUser)}
+          &${encodeURIComponent(token)}`,
+        xhr => {
+          let response = JSON.parse(xhr.responseText);
+          if (response.success) {
+            alert('Success');
+            changeContent('artist');
+          } else {
+            alert('Failed');
+          }
         }
-      }
-    );
+      );
+    }
   }
 }
 
@@ -281,7 +289,7 @@ function register(name, username, password) {
       role = row.value;
     }
   });
-  if (password.length < 6 || !name || !username || !password || !role) {
+  if (password.length < 6 || !username || !password  || !canRegister) {
     alert('Please fill up all forms completely');
   } else {
     doAjax(
@@ -303,11 +311,11 @@ function pay(phoneNumber) {
       subscriptionType = row.value;
     }
   });
-  if (phoneNumber.length === 9) {
+  if (phoneNumber.length === 9 && String(phoneNumber).charAt(0) === '9') {
     doAjax('POST', `/pay-subscription/
     ${encodeURIComponent(activeUser)}
     &${encodeURIComponent(subscriptionType)}
-    &${encodeURIComponent('+639' + phoneNumber)}`,
+    &${encodeURIComponent('+63' + phoneNumber)}`,
       xhr => {
         let response = JSON.parse(xhr.responseText);
         if (response.success) {
@@ -326,7 +334,7 @@ function search(keyword) {
   searchForPurchasedSongs();  
   let resultTable = document.getElementById('table');
   resultTable.innerHTML = `
-    <tr id="search-results">
+    <tr id="search-results" style="position: sticky">
       <th class="row">Song Title</th>
       <th class="row">Artist</th>
       <th class="row">Album</th>
@@ -394,9 +402,13 @@ function checkIfAvailable(username) {
   } else {
     doAjax('GET', `/checkIfAvailable/${encodeURIComponent(username)}`, xhr => {
       let response = JSON.parse(xhr.responseText);
-      response.available
-        ? (regUsernameField.style.borderColor = 'lightgreen')
-        : (regUsernameField.style.borderColor = 'red');
+      if (response.available && username.length >= 6) {
+        regUsernameField.style.borderColor = 'lightgreen';
+        canRegister = true;
+      } else {
+        (regUsernameField.style.borderColor = 'red');
+        canRegister = false;
+      }
     });
   }
 }

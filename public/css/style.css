@@ -297,7 +297,7 @@ h1 {
   float: left;
 }
 
-#subLabel {
+.subLabel {
   margin: 0;
 }
 
@@ -309,7 +309,7 @@ table {
 }
 
 #song-list {
-  width: 80%;
+  width: 100%;
   margin: 0 auto;
   text-align: center;
 }

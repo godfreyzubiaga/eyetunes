@@ -6,9 +6,10 @@ function registerHtml() {
         <label class="labels" for="fullname">Full Name / Band Name</label>
         <input type="text" name="name" id="fullname" class="fields"/>
         <label class="labels" for="username">Username</label>
+        <p class="subLabel">(6 or more characters)</p>        
         <input type="text" name="username" id="username" class="fields" onkeyup="checkIfAvailable(username.value)"/>
         <label class="labels" for="password" >Passsword</label>
-        <p id="subLabel">(6 or more characters)</p>
+        <p class="subLabel">(6 or more characters)</p>
         <input type="password" name="password" id="password" class="fields" onkeyup="passwordCheck(password.value)">
         <div id="options">
           <input type="radio" name="role" id="artist" value="artist">

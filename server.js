@@ -87,9 +87,6 @@ app.post('/register/:name&:username&:password&:role', (request, response) => {
         data.password = encryptedPassword;
         if (role === 'user') {
           data.subscribed = false;
-          dateSubscribed = 'none';
-          subscriptionType = 'none';
-          phoneNumber = 'none';
         }
         db.collection('users').insert(data, handleInsertResponse);
       } else {
@@ -230,10 +227,11 @@ app.get('/get-songs-from-album/:albumId', (request, response) => {
   }
 });
 
-app.post('/create-album/:albumName&:userId', (request, response) => {
+app.post('/create-album/:albumName&:userId&:token', (request, response) => {
   let name = request.params.albumName.trim();
   let userId = request.params.userId.trim();
-  if (validToken(localStorage.getItem('token'))) {
+  let token = request.params.token.trim();
+  if (validToken(token)) {
     if (name) {
       db.collection('albums').insertOne({ name: name }, handleAlbumResult);
     }
