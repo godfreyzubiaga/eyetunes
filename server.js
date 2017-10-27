@@ -48,9 +48,9 @@ app.get('/login/:username&:password', (request, response) => {
   function handleSamePassword(error, samePassword) {
     if (samePassword) {
       let id = result._id;
-      jwt.sign({id}, tokenSecret, (error, heresTheToken) => {
+      jwt.sign({ id }, tokenSecret, (error, heresTheToken) => {
         result.token = heresTheToken;
-        response.json(result);     
+        response.json(result);
       });
     } else {
       response.json({ passwordMatch: false });
@@ -63,6 +63,12 @@ app.post('/register/:name&:username&:password&:role', (request, response) => {
   let username = request.params.username.trim();
   let password = request.params.password.trim();
   let role = request.params.role.trim();
+  let data = {
+    name: '',
+    username: '',
+    role: '',
+    password: ''
+  };
   if (!name || !username || !password || !role || password.length < 6) {
     response.json({ registerSuccessful: false });
   } else {
@@ -74,19 +80,17 @@ app.post('/register/:name&:username&:password&:role', (request, response) => {
   function handleEncryptedPassword(error, encryptedPassword) {
     db.collection('users').findOne({ username: username }, (error, result) => {
       if (result === null || !result.username) {
-        db.collection('users').insert(
-          {
-            name: name,
-            username: username,
-            role: role,
-            password: encryptedPassword,
-            subscribed: false,
-            dateSubscribed: 'none',
-            subscriptionType: 'none',
-            phoneNumber: 'none'
-          },
-          handleInsertResponse
-        );
+        data.name = name;
+        data.username = username;
+        data.role = role;
+        data.password = encryptedPassword;
+        if (role === 'user') {
+          data.subscribed = false;
+          dateSubscribed = 'none';
+          subscriptionType = 'none';
+          phoneNumber = 'none';
+        }
+        db.collection('users').insert(data, handleInsertResponse);
       } else {
         response.json({ registerSuccessful: false });
       }
@@ -399,43 +403,39 @@ app.get('/search/:keyword', (request, response) => {
   }
 });
 
-app.post('/pay-subscription/:id&:subscriptionType&:phoneNumber', (request, response) => {
+app.post('/pay-subscription/:id&:subscriptionType&:phoneNumber',
+  (request, response) => {
+    let id = request.params.id.trim();
+    let subscriptionType = request.params.subscriptionType.trim();
+    let phoneNumber = request.params.phoneNumber.trim();
+    let date = new Date();
 
-  let id = request.params.id.trim();
-  let subscriptionType = request.params.subscriptionType.trim();
-  let phoneNumber = request.params.phoneNumber.trim();
-  let date = new Date();
-  
-  db
-    .collection('users')
-    .update(
-      { _id: ObjectId(id) },
-      {
-        $set: 
-        {
-          subscribed: true,
-          dateSubscribed: date, 
-          subscriptionType: subscriptionType, 
-          phoneNumber: phoneNumber 
-        }
-      },
-    (error, document)=> {
+    db.collection('users').update({ _id: ObjectId(id) },
+    {
+      $set: {
+        subscribed: true,
+        dateSubscribed: date,
+        subscriptionType: subscriptionType,
+        phoneNumber: phoneNumber
+      }
+    },
+    (error, document) => {
       if (!error) {
-        response.json({success: true});
+        response.json({ success: true });
       } else {
-        response.json({success: false});
+        response.json({ success: false });
       }
     });
   }
 );
 
 app.get('/verify-and-get-userId/:token', (request, response) => {
-  let token = (request.params.token).trim();
+  let token = request.params.token.trim();
   jwt.verify(token, tokenSecret, (error, decoded) => {
     if (!error) {
-      response.json({verifiedUser: true, id: decoded.id});
+      response.json({ verifiedUser: true, id: decoded.id });
     } else {
-      response.json({verifiedUser: false});
+      response.json({ verifiedUser: false });
     }
   });
 });

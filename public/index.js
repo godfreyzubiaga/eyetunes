@@ -59,17 +59,7 @@ function changeContent(page, albumId) {
     regPasswordField = document.getElementById('password');
   } else if (page === 'user') {
     content.innerHTML = userHtml();
-    purchasedSongs = [];
-    doAjax('GET', `/get-songs/${encodeURIComponent(activeUser)}`, xhr => {
-      let songs = JSON.parse(xhr.responseText).list;
-      if (songs.length >= 1) {
-        songs.map(addSongToPurchasedSong);
-      }
-    });
-
-    function addSongToPurchasedSong(row) {
-      purchasedSongs.push(row.id);
-    }
+    searchForPurchasedSongs();
   } else if (page === 'artist') {
     content.innerHTML = artistHtml();
     let headerText = document.getElementById('headerText');
@@ -105,7 +95,8 @@ function changeContent(page, albumId) {
 
     doAjax('GET', `/get-songs/${encodeURIComponent(activeUser)}`, xhr => {
       let songs = JSON.parse(xhr.responseText).list;
-      if (!songs.empty) {
+      console.log(songs);
+      if (songs.length >= 1) {
         let artists = '';
         songs.map(row => {
           row.artist.map((artist, index) => {
@@ -134,6 +125,20 @@ function changeContent(page, albumId) {
     content.innerHTML = paySubscriptionPage();
     price = document.getElementById('price');
     changePrice('monthly');
+  }
+}
+
+function searchForPurchasedSongs() {
+  purchasedSongs = [];
+  doAjax('GET', `/get-songs/${encodeURIComponent(activeUser)}`, xhr => {
+    let songs = JSON.parse(xhr.responseText).list;
+    if (songs.length >= 1) {
+      songs.map(addSongToPurchasedSong);
+    }
+  });
+
+  function addSongToPurchasedSong(row) {
+    purchasedSongs.push(row.id);
   }
 }
 
@@ -270,7 +275,7 @@ function register(name, username, password) {
       role = row.value;
     }
   });
-  if (password.length <= 6 || !name || !username || !password || !role) {
+  if (password.length < 6 || !name || !username || !password || !role) {
     alert('Please fill up all forms completely');
   } else {
     doAjax(
@@ -312,6 +317,7 @@ function pay(phoneNumber) {
 }
 
 function search(keyword) {
+  searchForPurchasedSongs();  
   let resultTable = document.getElementById('table');
   resultTable.innerHTML = `
     <tr id="search-results">
@@ -326,7 +332,6 @@ function search(keyword) {
   if (keyword.trim() === '') {
     keyword = ' ';
   }
-
   doAjax('GET', `/search/${encodeURIComponent(keyword)}`, xhr => {
     let songs = JSON.parse(xhr.responseText);
     songs.map(addSongToResult);
@@ -341,6 +346,7 @@ function search(keyword) {
           <td class="row" id="${row.id}"><button class="btn" onclick="addSongToOwnSongList('${row.id}')">Add Song</button></td>
         </tr>
       `;
+      
       if (index === songs.length - 1) {
         purchasedSongs.map(changeActionForPurchasedSong);
       }
