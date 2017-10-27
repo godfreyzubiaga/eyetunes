@@ -147,7 +147,7 @@ app.get('/get-songs/:userId', (request, response) => {
     if (user.songList) {
       let songs = user.songList;
       songsLength = songs.length;
-      songs.map(findSong);
+      songs.forEach(findSong);
     }
   }
 
@@ -207,7 +207,7 @@ app.get('/get-songs-from-album/:albumId', (request, response) => {
       } else {
         albumSongsLength = albumSongs.length;
         if (albumSongsLength >= 1) {
-          albumSongs.map(findSong);
+          albumSongs.forEach(findSong);
         }
       }
     } else {
@@ -365,7 +365,7 @@ app.get('/search/:keyword', (request, response) => {
   function handleSongResult(error, songs) {
     if (songs.length >= 1) {
       songLength = songs.length;
-      songs.map(findAlbum);
+      songs.forEach(findAlbum);
     }
   }
 
@@ -430,7 +430,7 @@ app.post('/pay-subscription/:id&:subscriptionType&:phoneNumber',
 );
 
 app.get('/verify-and-get-userId/:token', (request, response) => {
-  let token = request.params.token.trim();
+  let token = (request.params.token).trim();
   jwt.verify(token, tokenSecret, (error, decoded) => {
     if (!error) {
       response.json({ verifiedUser: true, id: decoded.id });

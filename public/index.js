@@ -68,7 +68,7 @@ function changeContent(page, albumId) {
       let user = JSON.parse(xhr.responseText);
       headerText.innerText = `Welcome, ${user.name}`;
       box.innerHTML = '';
-      user.albums.map(handleAlbumRow);
+      user.albums.forEach(handleAlbumRow);
     });
 
    function handleAlbumRow(row) {
@@ -98,8 +98,8 @@ function changeContent(page, albumId) {
       console.log(songs);
       if (songs.length >= 1) {
         let artists = '';
-        songs.map(row => {
-          row.artist.map((artist, index) => {
+        songs.forEach(row => {
+          row.artist.forEach((artist, index) => {
             if (index === row.artist.length - 1) {
               artists += artist.name + ' ';
             } else {
@@ -133,7 +133,7 @@ function searchForPurchasedSongs() {
   doAjax('GET', `/get-songs/${encodeURIComponent(activeUser)}`, xhr => {
     let songs = JSON.parse(xhr.responseText).list;
     if (songs.length >= 1) {
-      songs.map(addSongToPurchasedSong);
+      songs.forEach(addSongToPurchasedSong);
     }
   });
 
@@ -172,7 +172,7 @@ function editAlbum(id) {
   doAjax('GET', `/get-songs-from-album/${encodeURIComponent(id)}`, xhr => {
     let response = JSON.parse(xhr.responseText);
     if (response.result !== 'none') {
-      response.map(song => {
+      response.forEach(song => {
         songListTable.innerHTML += `
         <tr>
           <td>${song.name}</td>
@@ -334,7 +334,7 @@ function search(keyword) {
   }
   doAjax('GET', `/search/${encodeURIComponent(keyword)}`, xhr => {
     let songs = JSON.parse(xhr.responseText);
-    songs.map(addSongToResult);
+    songs.forEach(addSongToResult);
 
     function addSongToResult(row, index) {
       resultTable.innerHTML += `
@@ -348,7 +348,7 @@ function search(keyword) {
       `;
       
       if (index === songs.length - 1) {
-        purchasedSongs.map(changeActionForPurchasedSong);
+        purchasedSongs.forEach(changeActionForPurchasedSong);
       }
     }
 
