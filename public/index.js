@@ -351,7 +351,7 @@ function search(keyword) {
           <td class="row" id="${row.id}"><button class="btn" onclick="addSongToOwnSongList('${row.id}')">Add Song</button></td>
         </tr>
       `;
-      
+
       if (index === songs.length - 1) {
         purchasedSongs.forEach(changeActionForPurchasedSong);
       }
