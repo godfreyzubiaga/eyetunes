@@ -185,7 +185,7 @@ function editAlbum(id) {
 
   doAjax('GET', `/get-songs-from-album/${encodeURIComponent(id)}`, xhr => {
     let response = JSON.parse(xhr.responseText);
-    if (response.result !== 'none') {
+    if (response.result !== 'none' && response[0] !== null ) {
       response.forEach(song => {
         songListTable.innerHTML += `
         <tr>
@@ -211,10 +211,10 @@ function addSong(title, year) {
       xhr => {
         let response = JSON.parse(xhr.responseText);
         if (response.success) {
-          alertify.alert('Song was successfully added.');
+          alertify.success('Song was successfully added.');
           editAlbum(selectedAlbum);
         } else {
-          alertify.alert('something is wrong');
+          alertify.error('Something is wrong');
         }
       }
     );
@@ -222,18 +222,20 @@ function addSong(title, year) {
 }
 
 function removeSong(id) {
-  let confirmed = confirm('are you sure?');
-  if (confirmed) {
-    doAjax('POST', 
-      `/remove-song/${encodeURIComponent(id)}&${encodeURIComponent(selectedAlbum)}`, 
-      xhr => {
-        let response = JSON.parse(xhr.responseText);
-        if (response.success) {
-          editAlbum(selectedAlbum);
+  let confirmed = alertify.confirm('Are you sure?', () => {
+    if (confirmed) {
+      doAjax('POST', 
+        `/remove-song/${encodeURIComponent(id)}`, 
+        xhr => {
+          let response = JSON.parse(xhr.responseText);
+          if (response.success) {
+            alertify.success('Song was successfully removed');
+            editAlbum(selectedAlbum);
+          }
         }
-      }
-    );
-  }
+      );
+    }
+  });
 }
 
 function createAlbum(albumName) {
@@ -249,10 +251,10 @@ function createAlbum(albumName) {
         xhr => {
           let response = JSON.parse(xhr.responseText);
           if (response.success) {
-            alertify.alert('Success');
+            alertify.success('Album created!');
             changeContent('artist');
           } else {
-            alertify.alert('Failed');
+            alertify.error('Failed to create an Album');
           }
         }
       );
@@ -270,11 +272,12 @@ function login(username, password) {
       xhr => {
         const response = JSON.parse(xhr.responseText);
         if (response._id) {
+          alertify.success('Login successfully');
           activeUser = response._id;
           checkLandingPage(response);
           localStorage.setItem('token', response.token);
         } else {
-          alertify.alert('User not found');
+          alertify.error('User not found');
         }
       }
     );
@@ -311,6 +314,7 @@ function pay(phoneNumber) {
       subscriptionType = row.value;
     }
   });
+
   if (phoneNumber.length === 10 && String(phoneNumber).charAt(0) === '9') {
     doAjax('POST', `/pay-subscription/
     ${encodeURIComponent(activeUser)}
@@ -319,10 +323,8 @@ function pay(phoneNumber) {
       xhr => {
         let response = JSON.parse(xhr.responseText);
         if (response.success) {
-          alertify.alert('Subscribed!');
+          alertify.success('Subscribed!');
           changeContent('user');
-        } else {
-          alertify.alert('something is wrong with the server');  
         }
     });
   } else {
@@ -331,7 +333,7 @@ function pay(phoneNumber) {
 }
 
 function search(keyword) {
-  searchForPurchasedSongs();  
+  searchForPurchasedSongs();
   let resultTable = document.getElementById('table');
   resultTable.innerHTML = `
     <tr id="search-results" style="position: sticky">
@@ -388,10 +390,10 @@ function addSongToOwnSongList(songId) {
   function handleResponse(xhr) {
     let response = JSON.parse(xhr.responseText);
     if (response.success) {
-      alertify.alert('song successfully added to personal list');
+      alertify.success('Song successfully added to your personal list');
       changeContent('profile');
     } else {
-      alertify.alert('Something went wrong');
+      alertify.error('Something went wrong');
     }
   }
 }
@@ -426,10 +428,10 @@ function passwordCheck(password) {
 function showSuccess(xhr) {
   let response = JSON.parse(xhr.responseText);
   if (response.registerSuccessful) {
-    alertify.alert('Signup success');
+    alertify.success('Signup success');
     changeContent('login');
   } else {
-    alertify.alert('something is wrong with your inputs');
+    alertify.alert('Something is wrong with your inputs');
   }
 }
 
