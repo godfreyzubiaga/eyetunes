@@ -315,13 +315,12 @@ app.post('/insert-song/:albumId&:songTitle&:yearReleased', (request, response) =
   }
 );
 
-app.post('/remove-song/:id&:albumId', (request, response) => {
+app.post('/remove-song/:id', (request, response) => {
   let songId = request.params.id.trim();
-  let albumId = request.params.albumId.trim();
   db
     .collection('albums')
     .update(
-      { _id: ObjectId(albumId) },
+      {},
       { $pull: { songList: ObjectId(songId) } },
       handleUpdateResponse
     );
@@ -336,7 +335,22 @@ app.post('/remove-song/:id&:albumId', (request, response) => {
     }
   }
 
-  function handleDeleteSong(error, result) {
+  function handleDeleteSong(error) {
+    if (!error) {
+      db
+      .collection('users')
+      .update(
+        {}, 
+        {$pull : {songList: ObjectId(songId)}}, 
+        {multi: true}, 
+        handleRemoveSongFromUsers
+      );
+    } else {
+      response.json({ success: false });
+    }
+  }
+
+  function handleRemoveSongFromUsers(error) {
     if (!error) {
       response.json({ success: true });
     } else {
