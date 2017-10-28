@@ -55,7 +55,7 @@ function checkLandingPage(response) {
         if (subscription.type === 'oneTime') {
           changeContent(response.role);
         } else {
-          if (isStillSubscribe(subscription)) {
+          if (isStillSubscribed(subscription)) {
             changeContent(response.role);
           } else {
             changeContent('subscribe');
@@ -68,7 +68,7 @@ function checkLandingPage(response) {
   }
 }
 
-function isStillSubscribe(subscriptionDetails) {
+function isStillSubscribed(subscriptionDetails) {
   let oneDay = 1000 * 60 * 60 * 24;
   let oneYear = oneDay * 64;
   let todayDate = new Date().getTime();
