@@ -202,7 +202,7 @@ function editAlbum(id) {
 
 function addSong(title, year) {
   if (title === '' || year === '' ||year <= 1800 ||year > new Date().getFullYear() ) {
-    alert('Please fill up the form completely/correctly');
+    apprise('Please fill up the form completely/correctly');
   } else {
     doAjax('POST', `/insert-song/
     ${encodeURIComponent(selectedAlbum)}
@@ -211,10 +211,10 @@ function addSong(title, year) {
       xhr => {
         let response = JSON.parse(xhr.responseText);
         if (response.success) {
-          alert('Song was successfully added.');
+          apprise('Song was successfully added.');
           editAlbum(selectedAlbum);
         } else {
-          alert('something is wrong');
+          apprise('something is wrong');
         }
       }
     );
@@ -249,10 +249,10 @@ function createAlbum(albumName) {
         xhr => {
           let response = JSON.parse(xhr.responseText);
           if (response.success) {
-            alert('Success');
+            apprise('Success');
             changeContent('artist');
           } else {
-            alert('Failed');
+            apprise('Failed');
           }
         }
       );
@@ -262,7 +262,7 @@ function createAlbum(albumName) {
 
 function login(username, password) {
   if (!username || !password) {
-    alert('Please fill up the form completely');
+    apprise('Please fill up the form completely');
   } else {
     doAjax(
       'GET',
@@ -274,7 +274,7 @@ function login(username, password) {
           checkLandingPage(response);
           localStorage.setItem('token', response.token);
         } else {
-          alert('User not found');
+          apprise('User not found');
         }
       }
     );
@@ -290,7 +290,7 @@ function register(name, username, password) {
     }
   });
   if (password.length < 6 || !username || !password  || !canRegister) {
-    alert('Please fill up all forms completely');
+    apprise('Please fill up all forms completely');
   } else {
     doAjax(
       'POST',
@@ -311,7 +311,7 @@ function pay(phoneNumber) {
       subscriptionType = row.value;
     }
   });
-  if (phoneNumber.length === 9 && String(phoneNumber).charAt(0) === '9') {
+  if (phoneNumber.length === 10 && String(phoneNumber).charAt(0) === '9') {
     doAjax('POST', `/pay-subscription/
     ${encodeURIComponent(activeUser)}
     &${encodeURIComponent(subscriptionType)}
@@ -319,14 +319,14 @@ function pay(phoneNumber) {
       xhr => {
         let response = JSON.parse(xhr.responseText);
         if (response.success) {
-          alert('Subscribed!');
+          apprise('Subscribed!');
           changeContent('user');
         } else {
-          alert('something is wrong with the server');  
+          apprise('something is wrong with the server');  
         }
     });
   } else {
-    alert('Your phone number is incorrect');
+    apprise('Your phone number is incorrect');
   }
 }
 
@@ -388,10 +388,10 @@ function addSongToOwnSongList(songId) {
   function handleResponse(xhr) {
     let response = JSON.parse(xhr.responseText);
     if (response.success) {
-      alert('song successfully added to personal list');
+      apprise('song successfully added to personal list');
       changeContent('profile');
     } else {
-      alert('Something went wrong');
+      apprise('Something went wrong');
     }
   }
 }
@@ -426,10 +426,10 @@ function passwordCheck(password) {
 function showSuccess(xhr) {
   let response = JSON.parse(xhr.responseText);
   if (response.registerSuccessful) {
-    alert('Signup success');
+    apprise('Signup success');
     changeContent('login');
   } else {
-    alert('something is wrong with your inputs');
+    apprise('something is wrong with your inputs');
   }
 }
 
