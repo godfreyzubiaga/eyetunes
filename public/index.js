@@ -202,7 +202,7 @@ function editAlbum(id) {
 
 function addSong(title, year) {
   if (title === '' || year === '' ||year <= 1800 ||year > new Date().getFullYear() ) {
-    apprise('Please fill up the form completely/correctly');
+    alertify.alert('Please fill up the form completely/correctly');
   } else {
     doAjax('POST', `/insert-song/
     ${encodeURIComponent(selectedAlbum)}
@@ -211,10 +211,10 @@ function addSong(title, year) {
       xhr => {
         let response = JSON.parse(xhr.responseText);
         if (response.success) {
-          apprise('Song was successfully added.');
+          alertify.alert('Song was successfully added.');
           editAlbum(selectedAlbum);
         } else {
-          apprise('something is wrong');
+          alertify.alert('something is wrong');
         }
       }
     );
@@ -249,10 +249,10 @@ function createAlbum(albumName) {
         xhr => {
           let response = JSON.parse(xhr.responseText);
           if (response.success) {
-            apprise('Success');
+            alertify.alert('Success');
             changeContent('artist');
           } else {
-            apprise('Failed');
+            alertify.alert('Failed');
           }
         }
       );
@@ -262,7 +262,7 @@ function createAlbum(albumName) {
 
 function login(username, password) {
   if (!username || !password) {
-    apprise('Please fill up the form completely');
+    alertify.alert('Please fill up the form completely');
   } else {
     doAjax(
       'GET',
@@ -274,7 +274,7 @@ function login(username, password) {
           checkLandingPage(response);
           localStorage.setItem('token', response.token);
         } else {
-          apprise('User not found');
+          alertify.alert('User not found');
         }
       }
     );
@@ -290,7 +290,7 @@ function register(name, username, password) {
     }
   });
   if (password.length < 6 || !username || !password  || !canRegister) {
-    apprise('Please fill up all forms completely');
+    alertify.alert('Please fill up all forms completely');
   } else {
     doAjax(
       'POST',
@@ -319,14 +319,14 @@ function pay(phoneNumber) {
       xhr => {
         let response = JSON.parse(xhr.responseText);
         if (response.success) {
-          apprise('Subscribed!');
+          alertify.alert('Subscribed!');
           changeContent('user');
         } else {
-          apprise('something is wrong with the server');  
+          alertify.alert('something is wrong with the server');  
         }
     });
   } else {
-    apprise('Your phone number is incorrect');
+    alertify.alert('Your phone number is incorrect');
   }
 }
 
@@ -388,10 +388,10 @@ function addSongToOwnSongList(songId) {
   function handleResponse(xhr) {
     let response = JSON.parse(xhr.responseText);
     if (response.success) {
-      apprise('song successfully added to personal list');
+      alertify.alert('song successfully added to personal list');
       changeContent('profile');
     } else {
-      apprise('Something went wrong');
+      alertify.alert('Something went wrong');
     }
   }
 }
@@ -426,10 +426,10 @@ function passwordCheck(password) {
 function showSuccess(xhr) {
   let response = JSON.parse(xhr.responseText);
   if (response.registerSuccessful) {
-    apprise('Signup success');
+    alertify.alert('Signup success');
     changeContent('login');
   } else {
-    apprise('something is wrong with your inputs');
+    alertify.alert('something is wrong with your inputs');
   }
 }
 
