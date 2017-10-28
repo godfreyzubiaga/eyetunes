@@ -46,9 +46,7 @@ function loadUser(id) {
 }
 
 function checkLandingPage(response) {
-  if (response.role === 'user' && !response.subscribed) {
-    changeContent('subscribe');
-  } else {
+  if (response.role === 'user') {
     doAjax('GET', `/get-subscription/${encodeURIComponent(activeUser)}`, xhr => {
       let subscription = JSON.parse(xhr.responseText);
       if (subscription && subscription.subscribed) {
@@ -65,16 +63,18 @@ function checkLandingPage(response) {
         changeContent('subscribe');
       }
     });
+  } else {
+    changeContent(response.role);
   }
 }
 
 function isStillSubscribed(subscriptionDetails) {
   let oneDay = 1000 * 60 * 60 * 24;
   let oneYear = oneDay * 64;
-  let todayDate = new Date().getTime();
+  let todayDate = new Date('2018-11-30T20:53:48.671Z').getTime();
   let subscriptionStillValid = true;
   let subscriptionDate = new Date().getTime();
-  let daysDifference = Math.trunc((subscriptionDate - todayDate) / oneDay);
+  let daysDifference = Math.trunc((todayDate - subscriptionDate) / oneDay);
   let alertMsg = `Your ${subscriptionDetails.type} Subscription is already expired`;
 
   if (subscriptionDetails.type === 'monthly') {
