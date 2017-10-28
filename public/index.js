@@ -49,8 +49,47 @@ function checkLandingPage(response) {
   if (response.role === 'user' && !response.subscribed) {
     changeContent('subscribe');
   } else {
-    changeContent(response.role);
+    doAjax('GET', `/get-subscription/${encodeURIComponent(activeUser)}`, xhr => {
+      let subscription = JSON.parse(xhr.responseText);
+      if (subscription && subscription.subscribed) {
+        if (subscription.type === 'oneTime') {
+          changeContent(response.role);
+        } else {
+          if (isStillSubscribe(subscription)) {
+            changeContent(response.role);
+          } else {
+            changeContent('subscribe');
+          }
+        }
+      } else {
+        changeContent('subscribe');
+      }
+    });
   }
+}
+
+function isStillSubscribe(subscriptionDetails) {
+  let oneDay = 1000 * 60 * 60 * 24;
+  let oneYear = oneDay * 64;
+  let todayDate = new Date().getTime();
+  let subscriptionStillValid = true;
+  let subscriptionDate = new Date().getTime();
+  let daysDifference = Math.trunc((subscriptionDate - todayDate) / oneDay);
+  let alertMsg = `Your ${subscriptionDetails.type} Subscription is already expired`;
+
+  if (subscriptionDetails.type === 'monthly') {
+    if (daysDifference >= 30) {
+      subscriptionStillValid = false;
+      alertify.alert(alertMsg);
+    }
+  } else if (subscriptionDetails.type === 'yearly') {
+    if (daysDifference >= 365) {
+      subscriptionStillValid = false;
+      alertify.alert(alertMsg);
+    }
+  }
+
+  return subscriptionStillValid;
 }
 
 function changeContent(page, albumId) {

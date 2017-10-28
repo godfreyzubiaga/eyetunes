@@ -363,7 +363,6 @@ app.get('/search/:keyword', (request, response) => {
   let keyword = request.params.keyword.trim();
   let songLength;
   let searchResult = [];
-
   if (keyword === '') {
     keyword = '.';
   }
@@ -380,23 +379,28 @@ app.get('/search/:keyword', (request, response) => {
     }
   }
 
-  function findAlbum(row) {
-    db.collection('albums').findOne({
-      songList: ObjectId(row._id)
+  function findAlbum(song) {
+    db
+    .collection('albums')
+    .findOne({
+      songList: ObjectId(song._id)
     },
     (error, album) => {
       if (album !== null) {
-        db.collection('users').findOne({
-          albums: ObjectId(album._id)
-        },
+        db
+        .collection('users')
+        .findOne(
+          {
+            albums: ObjectId(album._id)
+          },
         (error, artist) => {
           if (artist !== null) {
             searchResult.push({
-              title: row.name,
+              title: song.name,
               artist: artist.name,
               album: album.name,
-              year: row.year,
-              id: row._id
+              year: song.year,
+              id: song._id
             });
             if (searchResult.length === songLength) {
               response.json(searchResult);
@@ -440,6 +444,28 @@ app.get('/verify-and-get-userId/:token', (request, response) => {
   } else {
     response.json({ verifiedUser: false });
   }
+});
+
+app.get('/get-subscription/:userId', (request, response) => {
+  let userId = request.params.userId.trim();
+  
+  db.collection('users').findOne({ _id: ObjectId(userId) }, handleUserResult);
+
+  function handleUserResult (error, user) {
+    if (!error) {
+      response.json(
+        { 
+          'type': user.subscriptionType, 
+          'date': user.dateSubscribed, 
+          subscribed: user.subscribed
+        }
+      );
+    }
+  }
+});
+
+app.post('/change-subscription-status/:userId', (request, response) => {
+
 });
 
 function validToken(token) {
