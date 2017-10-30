@@ -71,7 +71,7 @@ function checkLandingPage(response) {
 function isStillSubscribed(subscriptionDetails) {
   let oneDay = 1000 * 60 * 60 * 24;
   let oneYear = oneDay * 64;
-  let todayDate = new Date('2018-11-30T20:53:48.671Z').getTime();
+  let todayDate = new Date().getTime();
   let subscriptionStillValid = true;
   let subscriptionDate = new Date().getTime();
   let daysDifference = Math.trunc((todayDate - subscriptionDate) / oneDay);
