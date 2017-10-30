@@ -7,7 +7,8 @@ const jwt = require('jsonwebtoken');
 
 const app = express();
 const port = process.env.PORT || 8084;
-const dbUrl = 'mongodb://admin:eyetunesadmin@ds013495.mlab.com:13495/eyetunes';
+const dbUrl = 'mongodb://localhost:27017/eyetunes';
+// const dbUrl = 'mongodb://admin:eyetunesadmin@ds013495.mlab.com:13495/eyetunes';
 const tokenSecret = 'eyetunessecretstuff';
 let db;
 let decodedId;
@@ -286,8 +287,8 @@ app.post('/add-song-to-own-list/:songId&:userId', (request, response) => {
 
 app.post('/insert-song/:albumId&:songTitle&:yearReleased', (request, response) => {
     let albumId = request.params.albumId.trim();
-    let songTitle = request.params.songTitle;
-    let yearReleased = request.params.yearReleased;
+    let songTitle = request.params.songTitle.trim();
+    let yearReleased = request.params.yearReleased.trim();
     if (albumId && songTitle && yearReleased) {
       let song = { name: songTitle, year: yearReleased };
       db.collection('songs').insertOne(song, handleResponse);
@@ -366,20 +367,21 @@ app.get('/search/:keyword', (request, response) => {
   if (keyword === '') {
     keyword = '.';
   }
-
+  console.log(keyword);
   db
     .collection('songs')
     .find({ name: { $regex: `${keyword}`, $options: 'i' } })
     .toArray(handleSongResult);
-
   function handleSongResult(error, songs) {
     if (songs.length >= 1) {
+      
       songLength = songs.length;
       songs.forEach(findAlbum);
     }
   }
 
   function findAlbum(song) {
+    console.log('11111111111111111');
     db
     .collection('albums')
     .findOne({
@@ -387,6 +389,7 @@ app.get('/search/:keyword', (request, response) => {
     },
     (error, album) => {
       if (album !== null) {
+        
         db
         .collection('users')
         .findOne(
@@ -403,6 +406,7 @@ app.get('/search/:keyword', (request, response) => {
               id: song._id
             });
             if (searchResult.length === songLength) {
+              console.log(searchResult);
               response.json(searchResult);
             }
           }

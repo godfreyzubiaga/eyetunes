@@ -144,30 +144,32 @@ function changeContent(page, albumId) {
     });
 
     doAjax('GET', `/get-songs/${encodeURIComponent(activeUser)}`, xhr => {
-      let response = JSON.parse(xhr.responseText);
-      if (response) {
-        let songs = response.list;
-        if (songs.length >= 1) {
-          let artists = '';
-          songs.forEach(row => {
-            row.artist.forEach((artist, index) => {
-              if (index === row.artist.length - 1) {
-                artists += artist.name + ' ';
-              } else {
-                artists += artist.name + ', ';
-              }
+      if (xhr.responseText) {
+        let response = JSON.parse(xhr.responseText);
+        if (response) {
+          let songs = response.list;
+          if (songs.length >= 1) {
+            let artists = '';
+            songs.forEach(row => {
+              row.artist.forEach((artist, index) => {
+                if (index === row.artist.length - 1) {
+                  artists += artist.name + ' ';
+                } else {
+                  artists += artist.name + ', ';
+                }
+              });
+              table.innerHTML += `
+              <tr class="song-column">
+                <td>${row.name}</td>
+                <td id="artistRow">${artists}</td>
+                <td id="albumRow">${row.album}</td>
+                <td id="yearRow">${row.year}</td>
+              </tr>`;
+              artists = '';
             });
-            table.innerHTML += `
-            <tr class="song-column">
-              <td>${row.name}</td>
-              <td id="artistRow">${artists}</td>
-              <td id="albumRow">${row.album}</td>
-              <td id="yearRow">${row.year}</td>
-            </tr>`;
-            artists = '';
-          });
-        } 
-      }
+          } 
+        }
+      } 
     });
   } else if (page === 'addAlbum') {
     content.innerHTML = addAlbumHtml();
