@@ -7,8 +7,8 @@ const jwt = require('jsonwebtoken');
 
 const app = express();
 const port = process.env.PORT || 8084;
-const dbUrl = 'mongodb://localhost:27017/eyetunes';
-// const dbUrl = 'mongodb://admin:eyetunesadmin@ds013495.mlab.com:13495/eyetunes';
+// const dbUrl = 'mongodb://localhost:27017/eyetunes';
+const dbUrl = 'mongodb://admin:eyetunesadmin@ds013495.mlab.com:13495/eyetunes';
 const tokenSecret = 'eyetunessecretstuff';
 let db;
 let decodedId;
