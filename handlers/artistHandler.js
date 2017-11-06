@@ -126,28 +126,29 @@ module.exports = {
         .update(
           { _id: ObjectId(albumId) },
           { $pull: { songList: ObjectId(songId) } },
-          handleUpdateResponse
+          handleDeleteSong
         );
-
-      function handleUpdateResponse(error, result) {
-        if (!error) {
-          db
-            .collection('songs')
-            .deleteOne({ _id: ObjectId(songId) }, handleDeleteSong);
-        } else {
-          response.status(403).json({ success: false });
-        }
-      }
 
       function handleDeleteSong(error) {
         if (!error) {
           db
             .collection('users')
             .update(
-              { _id: ObjectId(userId) },
-              { $pull: { songList: ObjectId(songId) } },
-              handleRemoveSongFromUsers
+              {},
+              { $pull: { songList: ObjectId(songId) } }, 
+              {multi: true},
+              handleUpdateResponse
             );
+        } else {
+          response.status(403).json({ success: false });
+        }
+      }
+
+      function handleUpdateResponse(error, result) {
+        if (!error) {
+          db
+            .collection('songs')
+            .deleteOne({ _id: ObjectId(songId) }, handleRemoveSongFromUsers);
         } else {
           response.status(403).json({ success: false });
         }
